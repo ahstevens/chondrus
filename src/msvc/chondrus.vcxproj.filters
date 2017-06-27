@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{43c4ec60-48a7-4b20-b7f3-18c81dbc178c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Includes">
+      <UniqueIdentifier>{64c623df-d403-4543-8a7e-2f4bea8f569e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\GLFWInputBroadcaster.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\glSkel\mesh.cpp">
+      <Filter>Includes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Chondrus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\GLFWInputBroadcaster.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\BroadcastSystem.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\BulletDebugDrawer.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\camera.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\Engine.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\Gabor.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\GeometryStrip.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\lighting.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\mesh.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\Object.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\shader.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\TorusMesh.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Chondrus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\shaders\normals.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\shaders\normals.geom">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\shaders\normals.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\shaders\lamp.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\shaders\lamp.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\shaders\line.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\shaders\line.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\shaders\multiple_lights.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\shaders\multiple_lights.vs">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>
