@@ -129,7 +129,10 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\include\glSkel\LightingSystem.cpp" />
     <ClCompile Include="..\..\include\glSkel\mesh.cpp" />
+    <ClCompile Include="..\..\include\glSkel\Renderer.cpp" />
+    <ClCompile Include="..\..\include\glSkel\shaderset.cpp" />
     <ClCompile Include="..\GLFWInputBroadcaster.cpp" />
     <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\Chondrus.cpp" />
@@ -138,20 +141,27 @@
     <ClInclude Include="..\..\include\glSkel\BroadcastSystem.h" />
     <ClInclude Include="..\..\include\glSkel\BulletDebugDrawer.h" />
     <ClInclude Include="..\..\include\glSkel\camera.h" />
+    <ClInclude Include="..\..\include\glSkel\DebugDrawer.h" />
     <ClInclude Include="..\..\include\glSkel\Engine.h" />
     <ClInclude Include="..\..\include\glSkel\Gabor.h" />
     <ClInclude Include="..\..\include\glSkel\GeometryStrip.h" />
-    <ClInclude Include="..\..\include\glSkel\lighting.h" />
+    <ClInclude Include="..\..\include\glSkel\GLSLpreamble.h" />
+    <ClInclude Include="..\..\include\glSkel\LightingSystem.h" />
     <ClInclude Include="..\..\include\glSkel\mesh.h" />
     <ClInclude Include="..\..\include\glSkel\Object.h" />
-    <ClInclude Include="..\..\include\glSkel\shader.h" />
+    <ClInclude Include="..\..\include\glSkel\Renderer.h" />
+    <ClInclude Include="..\..\include\glSkel\shaderset.h" />
     <ClInclude Include="..\..\include\glSkel\TorusMesh.h" />
     <ClInclude Include="..\GLFWInputBroadcaster.h" />
     <ClInclude Include="..\Chondrus.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\shaders\debugDrawer.frag" />
+    <None Include="..\shaders\debugDrawer.vert" />
     <None Include="..\shaders\lamp.frag" />
     <None Include="..\shaders\lamp.vs" />
+    <None Include="..\shaders\lighting.frag" />
+    <None Include="..\shaders\lighting.vert" />
     <None Include="..\shaders\line.frag" />
     <None Include="..\shaders\line.vs" />
     <None Include="..\shaders\multiple_lights.frag" />

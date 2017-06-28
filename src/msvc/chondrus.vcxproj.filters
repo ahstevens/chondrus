@@ -33,6 +33,15 @@
     <ClCompile Include="..\Chondrus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\include\glSkel\shaderset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\glSkel\LightingSystem.cpp">
+      <Filter>Includes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\glSkel\Renderer.cpp">
+      <Filter>Includes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\GLFWInputBroadcaster.h">
@@ -56,16 +65,10 @@
     <ClInclude Include="..\..\include\glSkel\GeometryStrip.h">
       <Filter>Includes</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\glSkel\lighting.h">
-      <Filter>Includes</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\glSkel\mesh.h">
       <Filter>Includes</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\glSkel\Object.h">
-      <Filter>Includes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\glSkel\shader.h">
       <Filter>Includes</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\glSkel\TorusMesh.h">
@@ -73,6 +76,21 @@
     </ClInclude>
     <ClInclude Include="..\Chondrus.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\DebugDrawer.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\GLSLpreamble.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\shaderset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\LightingSystem.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\Renderer.h">
+      <Filter>Includes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -101,6 +119,18 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="..\shaders\multiple_lights.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\shaders\debugDrawer.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\shaders\debugDrawer.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\shaders\lighting.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\shaders\lighting.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

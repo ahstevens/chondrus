@@ -97,7 +97,7 @@ void Chondrus::receiveEvent(Object* obj, const int event, void * data)
 void Chondrus::Draw(Shader s)
 {
 	glm::mat4 modelMat = glm::translate(glm::mat4(), m_vec3Position) * glm::mat4(m_mat3Rotation);
-	mesh->Draw(s, modelMat);	
+	mesh->Draw(s, modelMat);
 }
 
 void Chondrus::buildModel()
