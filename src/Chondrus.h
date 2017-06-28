@@ -4,6 +4,8 @@
 #include <glSkel/Mesh.h>
 #include <glSkel/Shader.h>
 
+#include <glSkel\BulletDebugDrawer.h>
+
 class Chondrus : public Object, public BroadcastSystem::Listener
 {
 public:
@@ -34,5 +36,7 @@ private:
 	std::vector<Texture> loadTextures();
 
 	bool saveAsObj(std::string name = "untitled_model");	
+
+	BulletDebugDrawer *debugDrawer;
 };
 

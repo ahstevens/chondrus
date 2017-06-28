@@ -1,12 +1,12 @@
 #pragma once
 #include <glSkel/mesh.h>
-#include <glSkel/shader.h>
 
 #include <glSkel/BroadcastSystem.h>
-#include <glSkel/shader.h>
+#include <glSkel/shaderset.h>
 #include <glSkel/camera.h>
 #include <glSkel/mesh.h>
-#include <glSkel/lighting.h>
+#include <glSkel/LightingSystem.h>
+#include <glSkel/GLSLpreamble.h>
 
 #include "GLFWInputBroadcaster.h"
 #include "Chondrus.h"
@@ -34,15 +34,48 @@ public:
 	float m_fLastTime; // Time of last frame
 
 	Camera  *m_pCamera;
-	std::vector<Shader*> m_vpShaders;
-	Shader *m_pShaderLighting, *m_pShaderLamps, *m_pShaderNormals, *m_pShaderLines; 
+	ShaderSet m_Shaders;
+	std::map<std::string, GLuint*> m_mapShaders;
+	GLuint m_glFrameUBO;
+	//std::vector<Shader*> m_vpShaders;
+	//Shader *m_pShaderLighting, *m_pShaderLamps, *m_pShaderNormals, *m_pShaderLines; 
 	
-	GLint m_iViewLocLightingShader;
-	GLint m_iProjLocLightingShader;
-	GLint m_iViewPosLocLightingShader;
-	GLint m_iShininessLightingShader;
+	//GLint m_iViewLocLightingShader;
+	//GLint m_iProjLocLightingShader;
+	//GLint m_iViewPosLocLightingShader;
+	//GLint m_iShininessLightingShader;
 
 	std::vector<Chondrus*> chonds;
+
+	struct FrameUniforms {
+		glm::vec4 v4Viewport;
+		glm::mat4 m4View;
+		glm::mat4 m4Projection;
+		glm::mat4 m4ViewProjection;
+	};
+
+	struct RendererSubmission
+	{
+		GLenum			primitiveType;
+		GLuint			VAO;
+		int				vertCount;
+		std::string		shaderName;
+		GLuint			diffuseTex;
+		GLuint			specularTex;
+		float			specularExponent;
+		glm::mat4		modelToWorldTransform;
+
+		RendererSubmission()
+			: primitiveType(GL_NONE)
+			, VAO(0)
+			, vertCount(0)
+			, shaderName("")
+			, diffuseTex(0)
+			, specularTex(0)
+			, specularExponent(0.f)
+			, modelToWorldTransform(glm::mat4())
+		{}
+	};
 
 public:
 	Engine()
@@ -55,14 +88,15 @@ public:
 		, m_fDeltaTime(0.f)
 		, m_fLastTime(0.f)
 		, m_pCamera(NULL)
-		, m_pShaderLighting(NULL)
-		, m_pShaderLamps(NULL)
-		, m_pShaderNormals(NULL)
-		, m_pShaderLines(NULL)
-		, m_iViewLocLightingShader(-1)
-		, m_iProjLocLightingShader(-1)
-		, m_iViewPosLocLightingShader(-1)
-		, m_iShininessLightingShader(-1)
+		, m_glFrameUBO(0)
+		//, m_pShaderLighting(NULL)
+		//, m_pShaderLamps(NULL)
+		//, m_pShaderNormals(NULL)
+		//, m_pShaderLines(NULL)
+		//, m_iViewLocLightingShader(-1)
+		//, m_iProjLocLightingShader(-1)
+		//, m_iViewPosLocLightingShader(-1)
+		//, m_iShininessLightingShader(-1)
 	{
 	}
 
@@ -118,7 +152,7 @@ public:
 
 	bool init()
 	{
-		m_pWindow = init_gl_context("Saccharina latissima");
+		m_pWindow = init_gl_context("Chondrus crispus");
 
 		if (!m_pWindow)
 			return false;
@@ -126,6 +160,10 @@ public:
 		GLFWInputBroadcaster::getInstance().init(m_pWindow);
 		GLFWInputBroadcaster::getInstance().attach(this);  // Register self with input broadcaster
 		
+		glCreateBuffers(1, &m_glFrameUBO);
+		glNamedBufferData(m_glFrameUBO, sizeof(FrameUniforms), NULL, GL_STATIC_DRAW); // allocate memory
+		glBindBufferRange(GL_UNIFORM_BUFFER, SCENE_UNIFORM_BUFFER_LOCATION, m_glFrameUBO, 0, sizeof(FrameUniforms));
+
 		init_shaders();
 		init_camera();
 		init_lighting();
@@ -168,6 +206,8 @@ public:
 
 	void render()
 	{
+		m_Shaders.UpdatePrograms();
+
 		// OpenGL options
 		glEnable(GL_DEPTH_TEST);
 		glLineWidth(5.f);
@@ -177,13 +217,13 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Use corresponding shader when setting uniforms/drawing objects
-		m_pShaderLighting->Use();
-		glUniform3f(m_iViewPosLocLightingShader, m_pCamera->getPosition().x, m_pCamera->getPosition().y, m_pCamera->getPosition().z);
+		//m_pShaderLighting->Use();
+		//glUniform3f(m_iViewPosLocLightingShader, m_pCamera->getPosition().x, m_pCamera->getPosition().y, m_pCamera->getPosition().z);
 
-		m_pLightingSystem->sLight.position = m_pCamera->getPosition();
-		m_pLightingSystem->sLight.direction = glm::vec3(m_pCamera->getOrientation()[2]);
-
-		m_pLightingSystem->SetupLighting(*m_pShaderLighting);
+		//m_pLightingSystem->sLight.position = m_pCamera->getPosition();
+		//m_pLightingSystem->sLight.direction = glm::vec3(m_pCamera->getOrientation()[2]);
+		//
+		//m_pLightingSystem->SetupLighting(*m_pShaderLighting);
 
 		// Create camera transformations
 		glm::mat4 view = m_pCamera->getViewMatrix();
@@ -193,13 +233,13 @@ public:
 			0.01f,
 			1000.0f
 			);
+		glm::mat4 viewProjection = projection * view;
 
-		// Pass the matrices to the shader
-		glUniformMatrix4fv(m_iViewLocLightingShader, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(m_iProjLocLightingShader, 1, GL_FALSE, glm::value_ptr(projection));
-
-		// Set material properties
-		glUniform1f(m_iShininessLightingShader, 32.0f);		
+		glNamedBufferSubData(m_glFrameUBO, offsetof(FrameUniforms, m4View), sizeof(FrameUniforms::m4View), glm::value_ptr(view));
+		glNamedBufferSubData(m_glFrameUBO, offsetof(FrameUniforms, m4Projection), sizeof(FrameUniforms::m4Projection), glm::value_ptr(projection));
+		glNamedBufferSubData(m_glFrameUBO, offsetof(FrameUniforms, m4ViewProjection), sizeof(FrameUniforms::m4ViewProjection), glm::value_ptr(viewProjection));
+		
+		m_pLightingSystem->update(view);
 
 		for (auto& shader : m_vpShaders)
 		{
@@ -224,8 +264,8 @@ public:
 				}
 			}
 		}
-
-		Shader::Off();
+		
+		glUseProgram(0);
 	}
 
 private:
@@ -288,40 +328,53 @@ private:
 
 	void init_shaders()
 	{
+		m_Shaders.SetVersion("450");
+
+		m_Shaders.SetPreambleFile("GLSLpreamble.h");
+
+		m_mapShaders["companionWindow"] = m_Shaders.AddProgramFromExts({ "shaders/companionWindow.vert", "shaders/companionWindow.frag" });
+		m_mapShaders["lighting"] = m_Shaders.AddProgramFromExts({ "shaders/lighting.vert", "shaders/lighting.frag" });
+		m_mapShaders["lightingWireframe"] = m_Shaders.AddProgramFromExts({ "shaders/lighting.vert", "shaders/lightingWF.geom", "shaders/lightingWF.frag" });
+		m_mapShaders["debug"] = m_Shaders.AddProgramFromExts({ "shaders/debugDrawer.vert", "shaders/debugDrawer.frag" });
+		m_mapShaders["infoBox"] = m_Shaders.AddProgramFromExts({ "shaders/infoBox.vert", "shaders/infoBox.frag" });
+
+		m_pLightingSystem->addShaderToUpdate(m_mapShaders["lighting"]);
+		m_pLightingSystem->addShaderToUpdate(m_mapShaders["lightingWireframe"]);
+
 		// Build and compile our shader program
-		m_pShaderLighting = new Shader(
-			"shaders/multiple_lights.vs",
-			"shaders/multiple_lights.frag"
-			);
-		m_pShaderLighting->enable();
-		m_vpShaders.push_back(m_pShaderLighting);
-
-		m_pShaderLamps = new Shader(
-			"shaders/lamp.vs",
-			"shaders/lamp.frag"
-			);
-		m_pShaderLamps->enable();
-		m_vpShaders.push_back(m_pShaderLamps);
-
-		m_pShaderNormals = new Shader(
-			"shaders/normals.vs",
-			"shaders/normals.frag",
-			"shaders/normals.geom"
-			);
-		m_vpShaders.push_back(m_pShaderNormals);
-
-		m_pShaderLines = new Shader(
-			"shaders/line.vs",
-			"shaders/line.frag"
-			);
-		m_pShaderLines->enable();
-		m_vpShaders.push_back(m_pShaderLines);
-		
-		// Get the uniform locations
-		m_iViewLocLightingShader = glGetUniformLocation(m_pShaderLighting->Program, "view");
-		m_iProjLocLightingShader = glGetUniformLocation(m_pShaderLighting->Program, "projection");
-		m_iViewPosLocLightingShader = glGetUniformLocation(m_pShaderLighting->Program, "viewPos"); 
-		m_iShininessLightingShader = glGetUniformLocation(m_pShaderLighting->Program, "material.shininess");
+		//m_pShaderLighting = new Shader(
+		//	"shaders/multiple_lights.vs",
+		//	"shaders/multiple_lights.frag"
+		//	);
+		//m_pShaderLighting->enable();
+		//m_vpShaders.push_back(m_pShaderLighting);
+		//
+		//m_pShaderLamps = new Shader(
+		//	"shaders/lamp.vs",
+		//	"shaders/lamp.frag"
+		//	);
+		//m_pShaderLamps->enable();
+		//m_vpShaders.push_back(m_pShaderLamps);
+		//
+		//m_pShaderNormals = new Shader(
+		//	"shaders/normals.vs",
+		//	"shaders/normals.frag",
+		//	"shaders/normals.geom"
+		//	);
+		//m_vpShaders.push_back(m_pShaderNormals);
+		//
+		//m_pShaderLines = new Shader(
+		//	"shaders/line.vs",
+		//	"shaders/line.frag"
+		//	);
+		//m_pShaderLines->enable();
+		//m_vpShaders.push_back(m_pShaderLines);
+		//
+		//// Get the uniform locations
+		//m_iViewLocLightingShader = glGetUniformLocation(m_pShaderLighting->Program, "view");
+		//m_iProjLocLightingShader = glGetUniformLocation(m_pShaderLighting->Program, "projection");
+		//m_iViewPosLocLightingShader = glGetUniformLocation(m_pShaderLighting->Program, "viewPos"); 
+		//m_iShininessLightingShader = glGetUniformLocation(m_pShaderLighting->Program, "material.shininess");
 	}
 
 	void generateModels()

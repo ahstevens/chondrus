@@ -49,6 +49,8 @@ Chondrus::Chondrus(float solidThickness, float length, float width, glm::vec3 po
 	this->nVertsTall = static_cast<GLuint>(m_fLength / lengthGridSpacing);
 
 	this->buildModel();
+
+	debugDrawer = new BulletDebugDrawer();
 }
 
 
