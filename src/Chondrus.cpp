@@ -10,6 +10,8 @@
 #include <fstream>
 #include <sys/stat.h> // stat()
 
+#include <glSkel/Renderer.h>
+
 extern std::default_random_engine generator;
 
 const float lengthGridSpacing = 0.5f; // cm, approx
@@ -94,10 +96,19 @@ void Chondrus::receiveEvent(Object* obj, const int event, void * data)
 	}
 }
 
-void Chondrus::Draw(Shader s)
+void Chondrus::Draw()
 {
 	glm::mat4 modelMat = glm::translate(glm::mat4(), m_vec3Position) * glm::mat4(m_mat3Rotation);
-	mesh->Draw(s, modelMat);
+
+	Renderer::RendererSubmission rs;
+	rs.primitiveType = GL_TRIANGLES;
+	rs.shaderName = "lighting";
+	rs.VAO = mesh->getVAO();
+	rs.vertCount = mesh->getVertexCount();
+	rs.diffuseTex = 0;
+	rs.specularTex = 0;
+	rs.specularExponent = 10.f;
+	rs.modelToWorldTransform = modelMat;
 }
 
 void Chondrus::buildModel()

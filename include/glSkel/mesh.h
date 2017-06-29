@@ -15,8 +15,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <glSkel/shader.h>
-
 const float consolidationSearchRadius = 0.01f; // cm
 
 struct Texture {
@@ -32,6 +30,8 @@ public:
     /*  Functions  */
     // Constructor to make a DCEL mesh from a triangle soup
 	Mesh(std::vector<glm::vec3> vvec3Vertices, std::vector<GLuint> vuiIndices, std::vector<Texture> vTextures);    
+
+	GLuint getVAO();
 
 	unsigned int getVertexCount();
 
@@ -60,9 +60,6 @@ public:
 
 	glm::vec3 getCentroidPosition(const std::vector<int> &indices);
 	glm::vec3 getPositionAtIndex(const int &index);
-
-	// Render the mesh
-	void Draw(Shader& shader, glm::mat4& modelMatrix);
 
 /************** HALF-EDGE (HE) DATA STRUCTS *******************/
 private:

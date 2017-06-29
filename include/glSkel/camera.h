@@ -28,7 +28,9 @@ const float m_fDefaultSpeed           =  30.f;
 const float m_fDefaultSensitivity     =   0.25f;
 const float m_fDefaultZoom            =  45.f;
 const float m_fDefaultZoomMin         =  45.f;
-const float m_fDefaultZoomMax         =   1.f;
+const float m_fDefaultZoomMax         =   1.f; 
+const float m_fNearClip				  =   0.1f;
+const float m_fFarClip				  =  50.f;
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Camera : public Object, public BroadcastSystem::Listener
@@ -60,6 +62,22 @@ public:
     {
         return glm::lookAt(m_vec3Position, m_vec3Position + m_mat3Rotation[2], m_mat3Rotation[1]);
     }
+
+	// Returns the view matrix calculated using Eular Angles and the LookAt Matrix
+	glm::mat4 getProjectionMatrix(float aspect_ratio)
+	{
+		return glm::perspective(glm::radians(getZoom()), aspect_ratio, m_fNearClip, m_fFarClip);
+	}
+
+	float getNearPlane()
+	{
+		return m_fNearClip;
+	}
+
+	float getFarPlane()
+	{
+		return m_fFarClip;
+	}
 
 	float getZoom() 
 	{ 

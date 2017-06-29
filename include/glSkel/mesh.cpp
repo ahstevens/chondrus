@@ -34,6 +34,11 @@ Mesh::Mesh(std::vector<glm::vec3> vvec3Vertices, std::vector<GLuint> vuiIndices,
 	this->setupGL();
 }
 
+GLuint Mesh::getVAO()
+{
+	return m_glVAO;
+}
+
 unsigned int Mesh::getVertexCount()
 {
 	return m_vpVertices.size();
@@ -399,53 +404,6 @@ glm::vec3 Mesh::getCentroidPosition(const std::vector<int> &indices)
 glm::vec3 Mesh::getPositionAtIndex(const int & index)
 {
 	return m_vpVertices[index]->pos;
-}
-
-void Mesh::Draw(Shader& shader, glm::mat4& modelMatrix)
-{
-	// Bind appropriate textures
-	GLuint diffuseNr = 1;
-	GLuint specularNr = 1;
-	GLuint normalNr = 1;
-	GLuint heightNr = 1;
-	for (GLuint i = 0; i < this->m_vTextures.size(); i++)
-	{
-		glActiveTexture(GL_TEXTURE0 + i); // Active proper texture unit before binding
-										  // Retrieve texture number (the N in diffuse_textureN)
-		std::stringstream ss;
-		std::string number;
-		std::string name = this->m_vTextures[i].type;
-		if (name == "texture_diffuse")
-			ss << diffuseNr++;
-		else if (name == "texture_specular")
-			ss << specularNr++;
-		else if (name == "texture_normal")
-			ss << normalNr++;
-		else if (name == "texture_height")
-			ss << heightNr++;
-		number = ss.str();
-		// Now set the sampler to the correct texture unit
-		glUniform1i(glGetUniformLocation(shader.Program, (name + number).c_str()), i);
-		// And finally bind the texture
-		glBindTexture(GL_TEXTURE_2D, this->m_vTextures[i].id);
-	}
-
-	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-	// triangle mesh has 3 indices per face
-	GLsizei nIndices = static_cast<GLsizei>(this->m_vpFaces.size() * 3);
-
-	// Draw mesh
-	glBindVertexArray(this->m_glVAO);
-	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
-
-	// Always good practice to set everything back to defaults once configured.
-	for (GLuint i = 0; i < this->m_vTextures.size(); i++)
-	{
-		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
 }
 
 void Mesh::initializeVertices(std::vector<glm::vec3> vertices)

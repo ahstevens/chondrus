@@ -19,7 +19,7 @@ public:
 
 	void receiveEvent(Object* obj, const int event, void* data);
 
-	void Draw(Shader s);
+	void Draw();
 
 private:
 	Mesh* mesh;
