@@ -38,6 +38,11 @@ GLuint* Renderer::getShader(const char * name)
 	return m_mapShaders.count(name) > 0 ? m_mapShaders[name] : NULL;
 }
 
+const GLuint * Renderer::getFrameUBO()
+{
+	return &m_glFrameUBO;
+}
+
 void Renderer::addToStaticRenderQueue(RendererSubmission &rs)
 {
 	m_vStaticRenderQueue.push_back(rs);
@@ -72,11 +77,8 @@ void Renderer::SetupShaders()
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-void Renderer::RenderFrame(GLFWwindow *win)
+void Renderer::RenderFrame(GLsizei width, GLsizei height)
 {
-	int width, height;
-	glfwGetWindowSize(win, &width, &height);
-
 	m_Shaders.UpdatePrograms();
 
 	// for now as fast as possible
@@ -93,34 +95,27 @@ void Renderer::RenderFrame(GLFWwindow *win)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	// Set viewport for shader uniforms
-	glNamedBufferSubData(m_glFrameUBO, offsetof(FrameUniforms, v4Viewport), sizeof(FrameUniforms::v4Viewport), glm::value_ptr(glm::vec4(0, 0, width, height)));
-	glNamedBufferSubData(m_glFrameUBO, offsetof(FrameUniforms, m4View), sizeof(FrameUniforms::m4View), glm::value_ptr(thisEyesViewMatrix));
-	glNamedBufferSubData(m_glFrameUBO, offsetof(FrameUniforms, m4Projection), sizeof(FrameUniforms::m4Projection), glm::value_ptr(thisEyesProjectionMatrix));
-	glNamedBufferSubData(m_glFrameUBO, offsetof(FrameUniforms, m4ViewProjection), sizeof(FrameUniforms::m4ViewProjection), glm::value_ptr(thisEyesViewProjectionMatrix));
 
 	if (*m_mapShaders["debug"])
 	{
 		glUseProgram(*m_mapShaders["debug"]);
 		glUniformMatrix4fv(MODEL_MAT_UNIFORM_LOCATION, 1, GL_FALSE, glm::value_ptr(glm::mat4()));
 		DebugDrawer::getInstance().render();
+		DebugDrawer::getInstance().flushLines();
 	}
 
 	// STATIC OBJECTS
 	processRenderQueue(m_vStaticRenderQueue);
 
 	// DYNAMIC OBJECTS
-	processRenderQueue(m_vDynamicRenderQueue);
+	processRenderQueue(m_vDynamicRenderQueue, true);
 
 	glDisable(GL_BLEND);
 
-	glUseProgram(0);
-	
-	m_vDynamicRenderQueue.clear();
-	DebugDrawer::getInstance().flushLines();
+	glUseProgram(0);	
 }
 
-void Renderer::processRenderQueue(std::vector<RendererSubmission> &renderQueue)
+void Renderer::processRenderQueue(std::vector<RendererSubmission> &renderQueue, bool clearQueueAfterProcessing)
 {
 	for (auto i : renderQueue)
 	{
@@ -142,6 +137,9 @@ void Renderer::processRenderQueue(std::vector<RendererSubmission> &renderQueue)
 			glBindVertexArray(0);
 		}
 	}
+
+	if (clearQueueAfterProcessing)
+		renderQueue.clear();
 }
 
 void Renderer::Shutdown()

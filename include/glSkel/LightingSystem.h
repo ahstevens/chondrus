@@ -3,12 +3,10 @@
 
 #include <vector>
 
-#include "BroadcastSystem.h"
-#include "Icosphere.h"
 #include "GLSLpreamble.h"
 
-#include <shared/glm/glm.hpp>
-#include <GL\glew.h>
+#include <glm/glm.hpp>
+#include <GL/glew.h>
 
 class LightingSystem
 {
@@ -76,9 +74,7 @@ public:
 
 private:
 	Light m_arrLights[MAX_LIGHTS];
-
-	GLuint m_glLightingUBO;
-
+	
 	std::vector<GLuint*> m_vpShadersWithLighting;
 
 	int m_nLights;

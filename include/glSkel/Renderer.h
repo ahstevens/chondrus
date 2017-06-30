@@ -49,13 +49,14 @@ public:
 	bool init();
 
 	GLuint* getShader(const char *name);
+	const GLuint* getFrameUBO();
 	
 	void addToStaticRenderQueue(RendererSubmission &rs);
 	void addToDynamicRenderQueue(RendererSubmission &rs);
 
 	void toggleWireframe();
 
-	void RenderFrame(GLFWwindow *m_pWindow);
+	void RenderFrame(GLsizei width, GLsizei height);
 
 	void Shutdown();
 
@@ -65,7 +66,7 @@ private:
 
 	void SetupShaders();
 
-	void processRenderQueue(std::vector<RendererSubmission> &renderQueue);
+	void processRenderQueue(std::vector<RendererSubmission> &renderQueue, bool clearQueueAfterProcessing = false);
 
 	void RenderScene();
 

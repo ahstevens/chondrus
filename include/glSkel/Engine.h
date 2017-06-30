@@ -28,6 +28,7 @@ public:
 	// Constants
 	const int m_iWidth = 1280;
 	const int m_iHeight = 800;
+	const float m_fAspect = static_cast<float>(m_iWidth) / static_cast<float>(m_iHeight);
 	const float m_fStepSize = 1.f / 120.f;
 
 	float m_fDeltaTime;	// Time between current frame and last frame
@@ -158,7 +159,7 @@ public:
 
 			update(m_fStepSize);
 
-			render();
+			Renderer::getInstance().RenderFrame(m_iWidth, m_iHeight);
 
 			// Flip buffers and render to screen
 			glfwSwapBuffers(m_pWindow);
@@ -169,44 +170,34 @@ public:
 	{
 		m_pCamera->update(dt);
 
-		// update soft mesh vertices
-		for (auto &s : chonds)
-			s->update();
-	}
-
-	void render()
-	{
-		// OpenGL options
-		glEnable(GL_DEPTH_TEST);
-		glLineWidth(5.f);
-
-		// Background Fill Color
-		glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		// Create camera transformations
 		glm::mat4 view = m_pCamera->getViewMatrix();
 		glm::mat4 projection = glm::perspective(
 			glm::radians(m_pCamera->getZoom()),
-			static_cast<float>(m_iWidth) / static_cast<float>(m_iHeight),
+			m_fAspect,
 			m_pCamera->getNearPlane(),
 			m_pCamera->getFarPlane()
 			);
 		glm::mat4 viewProjection = projection * view;
 
-		glNamedBufferSubData(m_glFrameUBO, offsetof(FrameUniforms, m4View), sizeof(FrameUniforms::m4View), glm::value_ptr(view));
-		glNamedBufferSubData(m_glFrameUBO, offsetof(FrameUniforms, m4Projection), sizeof(FrameUniforms::m4Projection), glm::value_ptr(projection));
-		glNamedBufferSubData(m_glFrameUBO, offsetof(FrameUniforms, m4ViewProjection), sizeof(FrameUniforms::m4ViewProjection), glm::value_ptr(viewProjection));
-		
 		m_pLightingSystem->update(view);
 
+		// Set viewport for shader uniforms
+		glNamedBufferSubData(*Renderer::getInstance().getFrameUBO(), offsetof(FrameUniforms, v4Viewport), sizeof(FrameUniforms::v4Viewport), glm::value_ptr(glm::vec4(0, 0, m_iWidth, m_iHeight)));
+		glNamedBufferSubData(*Renderer::getInstance().getFrameUBO(), offsetof(FrameUniforms, m4View), sizeof(FrameUniforms::m4View), glm::value_ptr(view));
+		glNamedBufferSubData(*Renderer::getInstance().getFrameUBO(), offsetof(FrameUniforms, m4Projection), sizeof(FrameUniforms::m4Projection), glm::value_ptr(projection));
+		glNamedBufferSubData(*Renderer::getInstance().getFrameUBO(), offsetof(FrameUniforms, m4ViewProjection), sizeof(FrameUniforms::m4ViewProjection), glm::value_ptr(viewProjection));
+		
+		// update soft mesh vertices
+		for (auto &s : chonds)
+			s->update();
 	}
 
 private:
 	GLFWwindow* init_gl_context(std::string winName)
 	{
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 		glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
@@ -253,7 +244,7 @@ private:
 
 	void init_camera()
 	{
-		m_pCamera = new Camera(glm::vec3(0.0f, 25.0f, 50.0f));
+		m_pCamera = new Camera(glm::vec3(0.0f, 25.0f, 50.0f), m_vec3DefaultUp, m_iWidth, m_iHeight);
 		GLFWInputBroadcaster::getInstance().attach(m_pCamera);
 	}
 

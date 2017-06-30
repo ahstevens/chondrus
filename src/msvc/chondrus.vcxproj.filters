@@ -65,9 +65,6 @@
     <ClInclude Include="..\..\include\glSkel\GeometryStrip.h">
       <Filter>Includes</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\glSkel\mesh.h">
-      <Filter>Includes</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\glSkel\Object.h">
       <Filter>Includes</Filter>
     </ClInclude>
@@ -90,6 +87,9 @@
       <Filter>Includes</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\glSkel\Renderer.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\mesh.h">
       <Filter>Includes</Filter>
     </ClInclude>
   </ItemGroup>

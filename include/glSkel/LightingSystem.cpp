@@ -8,18 +8,13 @@
 #endif // !GLEW_STATIC
 #include <GL/glew.h>
 
-#include <shared/glm/gtc/matrix_transform.hpp>
-#include <shared/glm/gtc/type_ptr.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <string>
 
 LightingSystem::LightingSystem()
-	: m_glLightingUBO(0)
-	, m_nLights(0)
+	: m_nLights(0)
 {
-	//glCreateBuffers(1, &m_glLightingUBO);
-	//glNamedBufferData(m_glLightingUBO, sizeof(FrameUniforms), NULL, GL_STATIC_DRAW); // allocate memory
-	//glBindBufferRange(GL_UNIFORM_BUFFER, SCENE_UNIFORM_BUFFER_LOCATION, m_glLightingUBO, 0, sizeof(FrameUniforms));
 }
 
 LightingSystem::~LightingSystem()

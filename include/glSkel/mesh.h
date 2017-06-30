@@ -29,7 +29,7 @@ public:
 
     /*  Functions  */
     // Constructor to make a DCEL mesh from a triangle soup
-	Mesh(std::vector<glm::vec3> vvec3Vertices, std::vector<GLuint> vuiIndices, std::vector<Texture> vTextures);    
+	Mesh(std::vector<glm::vec3> vvec3Vertices, std::vector<GLuint> vuiIndices);    
 
 	GLuint getVAO();
 
@@ -127,7 +127,6 @@ private:
 	std::vector<HE_Edge*> m_vpEdges;
 	std::vector<HE_Face*> m_vpFaces;
 	std::vector<HE_Vertex*> m_vpVertices;
-	std::vector<Texture> m_vTextures;
 	HE_Edge *m_pBoundaryEdge;
 
 /***** GL BUFFER DATA STRUCTS *****/

@@ -1,7 +1,7 @@
 #include "mesh.h"
 #pragma once
 
-Mesh::Mesh(std::vector<glm::vec3> vvec3Vertices, std::vector<GLuint> vuiIndices, std::vector<Texture> vTextures)
+Mesh::Mesh(std::vector<glm::vec3> vvec3Vertices, std::vector<GLuint> vuiIndices)
 {
 	this->m_vTextures = vTextures;
 	this->m_pBoundaryEdge = NULL;

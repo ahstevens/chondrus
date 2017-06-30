@@ -20,17 +20,19 @@ enum Camera_Movement {
 };
 	
 // Default camera values
-const glm::vec3 m_vec3DefaultPosition =  glm::vec3(0.f, 0.f, 0.f);
-const glm::vec3 m_vec3DefaultUp       =  glm::vec3(0.f, 1.f, 0.f);
-const float m_fDefaultYaw             = -90.f;
-const float m_fDefaultPitch           =   0.f;
-const float m_fDefaultSpeed           =  30.f;
-const float m_fDefaultSensitivity     =   0.25f;
-const float m_fDefaultZoom            =  45.f;
-const float m_fDefaultZoomMin         =  45.f;
-const float m_fDefaultZoomMax         =   1.f; 
-const float m_fNearClip				  =   0.1f;
-const float m_fFarClip				  =  50.f;
+const glm::vec3 m_vec3DefaultPosition =   glm::vec3(0.f, 0.f, 0.f);
+const glm::vec3 m_vec3DefaultUp       =   glm::vec3(0.f, 1.f, 0.f);
+const float m_fDefaultYaw             =  -90.f;
+const float m_fDefaultPitch           =    0.f;
+const float m_fDefaultSpeed           =   30.f;
+const float m_fDefaultSensitivity     =    0.25f;
+const float m_fDefaultZoom            =   45.f;
+const float m_fDefaultZoomMin         =   45.f;
+const float m_fDefaultZoomMax         =    1.f; 
+const float m_fDefaultNearClip		  =    0.1f;
+const float m_fDefaultFarClip		  =   50.f;
+const float m_iDefaultWidth			  =  800;
+const float m_iDefaultHeight		  =  600;
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Camera : public Object, public BroadcastSystem::Listener
@@ -40,6 +42,8 @@ public:
     Camera(
 		glm::vec3 position = m_vec3DefaultPosition,
 		glm::vec3 up = m_vec3DefaultUp,
+		int width = m_iDefaultWidth,
+		int height = m_iDefaultHeight,
 		float yaw = m_fDefaultYaw,
 		float pitch = m_fDefaultPitch
 	) 
@@ -48,11 +52,16 @@ public:
 		, m_fZoom(m_fDefaultZoom)
 		, m_fZoomMin(m_fDefaultZoomMin)
 		, m_fZoomMax(m_fDefaultZoomMax)
+		, m_fNearClip(m_fDefaultNearClip)
+		, m_fFarClip(m_fDefaultFarClip)
     {
         m_vec3Position = position;
 		m_vec3WorldUp = up;
+		m_iWidth = width;
+		m_iHeight = height;
         m_fYaw = yaw;
         m_fPitch = pitch;
+		m_fAspectRatio = static_cast<float>(m_iWidth) / static_cast<float>(m_iHeight);
         updateCameraVectors();
 		memset(m_brMovementState, 0, sizeof(m_brMovementState));
     }
@@ -64,9 +73,9 @@ public:
     }
 
 	// Returns the view matrix calculated using Eular Angles and the LookAt Matrix
-	glm::mat4 getProjectionMatrix(float aspect_ratio)
+	glm::mat4 getProjectionMatrix()
 	{
-		return glm::perspective(glm::radians(getZoom()), aspect_ratio, m_fNearClip, m_fFarClip);
+		return glm::perspective(glm::radians(getZoom()), m_fAspectRatio, m_fNearClip, m_fFarClip);
 	}
 
 	float getNearPlane()
@@ -152,7 +161,12 @@ private:
 	// Camera Attributes
 	glm::vec3 m_vec3WorldUp;
 
-	// Eular Angles
+	int m_iWidth;
+	int m_iHeight;
+	float m_fNearClip;
+	float m_fFarClip;
+
+	// Euler Angles
 	float m_fYaw;
 	float m_fPitch;
 
@@ -160,6 +174,8 @@ private:
 	float m_fMovementSpeed;
 	float m_fSensitivity;
 	float m_fZoom, m_fZoomMin, m_fZoomMax;
+
+	float m_fAspectRatio;
 
 	bool m_brMovementState[4]; // FORWARD, BACKWARD, LEFT, RIGHT
 	
