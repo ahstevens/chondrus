@@ -94,33 +94,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shaders\normals.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\shaders\normals.geom">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\shaders\normals.vs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\shaders\lamp.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\shaders\lamp.vs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\shaders\line.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\shaders\line.vs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\shaders\multiple_lights.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\shaders\multiple_lights.vs">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="..\shaders\debugDrawer.frag">
       <Filter>Shaders</Filter>
     </None>
