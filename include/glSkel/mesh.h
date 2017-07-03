@@ -17,11 +17,6 @@
 
 const float consolidationSearchRadius = 0.01f; // cm
 
-struct Texture {
-    GLuint id;
-    std::string type;
-};
-
 class Mesh {
 public:
 	std::map<int, int> m_vOpposingVertPairs;
@@ -154,7 +149,7 @@ private:
 
 	void updateBoundaryEdgePointer();
 
-	void makeBufferVertices(std::vector<Vertex> & vVertices, std::vector<GLuint> & vIndices);
+	void makeBufferVertices(std::vector<Vertex> & vVertices, std::vector<GLushort> & vIndices);
 
 	void checkVertices();
 

@@ -133,5 +133,11 @@
     <None Include="..\shaders\lighting.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="..\shaders\lightingWF.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\shaders\lightingWF.geom">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

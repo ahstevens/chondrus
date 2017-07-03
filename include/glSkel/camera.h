@@ -30,7 +30,7 @@ const float m_fDefaultZoom            =   45.f;
 const float m_fDefaultZoomMin         =   45.f;
 const float m_fDefaultZoomMax         =    1.f; 
 const float m_fDefaultNearClip		  =    0.1f;
-const float m_fDefaultFarClip		  =   50.f;
+const float m_fDefaultFarClip		  = 1000.f;
 const float m_iDefaultWidth			  =  800;
 const float m_iDefaultHeight		  =  600;
 

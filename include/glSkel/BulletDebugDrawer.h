@@ -11,7 +11,7 @@
 
 #include <bullet/LinearMath/btIDebugDraw.h>
 
-#include <glSkel/shader.h>
+#include <glSkel/GLSLpreamble.h>
 
 class BulletDebugDrawer : public btIDebugDraw
 {
@@ -72,13 +72,13 @@ public:
 	}
 
 	// Render the mesh
-	void Draw(Shader shader)
+	void Draw()
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, this->m_glVBO);
 		glBufferData(GL_ARRAY_BUFFER, m_vVertices.size() * sizeof(DebugVertex), m_vVertices.data(), GL_STREAM_DRAW);
 
 		glm::mat4 model = glm::mat4();
-		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(MODEL_MAT_UNIFORM_LOCATION, 1, GL_FALSE, glm::value_ptr(model));
 		
 		// Draw mesh
 		glBindVertexArray(this->m_glVAO);

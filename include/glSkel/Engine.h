@@ -7,6 +7,7 @@
 #include <glSkel/mesh.h>
 #include <glSkel/LightingSystem.h>
 #include <glSkel/GLSLpreamble.h>
+#include <glSkel/DebugDrawer.h>
 
 #include "GLFWInputBroadcaster.h"
 #include "Chondrus.h"
@@ -135,11 +136,11 @@ public:
 		GLFWInputBroadcaster::getInstance().init(m_pWindow);
 		GLFWInputBroadcaster::getInstance().attach(this);  // Register self with input broadcaster
 		
-		Renderer::getInstance(); // this will init the renderer singleton
+		Renderer::getInstance().init(); // this will init the renderer singleton
 		init_camera();
 		init_lighting();
 		generateModels();
-
+		
 		return true;
 	}
 
@@ -158,6 +159,13 @@ public:
 			GLFWInputBroadcaster::getInstance().poll();
 
 			update(m_fStepSize);
+
+			for (auto &c : chonds)
+				c->Draw();
+
+			DebugDrawer::getInstance().drawLine(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 33.f, 0.f));
+			DebugDrawer::getInstance().drawLine(glm::vec3(0.f, 33.f, 0.f), glm::vec3(20.f, 50.f, 0.f));
+			DebugDrawer::getInstance().drawLine(glm::vec3(0.f, 33.f, 0.f), glm::vec3(-20.f, 50.f, 0.f));
 
 			Renderer::getInstance().RenderFrame(m_iWidth, m_iHeight);
 
@@ -189,15 +197,15 @@ public:
 		glNamedBufferSubData(*Renderer::getInstance().getFrameUBO(), offsetof(FrameUniforms, m4ViewProjection), sizeof(FrameUniforms::m4ViewProjection), glm::value_ptr(viewProjection));
 		
 		// update soft mesh vertices
-		for (auto &s : chonds)
-			s->update();
+		for (auto &c : chonds)
+			c->update();
 	}
 
 private:
 	GLFWwindow* init_gl_context(std::string winName)
 	{
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 		glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
@@ -230,13 +238,13 @@ private:
 	{
 		m_pLightingSystem = new LightingSystem();
 
-		m_pLightingSystem->addDirectLight()->ambientCoefficient = 0.5f;
+		m_pLightingSystem->addDirectLight()->ambientCoefficient = 0.01f;
 
 		// Positions of the point lights
-		m_pLightingSystem->addPointLight(glm::vec4(25.f, 0.f, 25.f, 1.f));
-		m_pLightingSystem->addPointLight(glm::vec4(25.f, 0.f, -25.f, 1.f));
-		m_pLightingSystem->addPointLight(glm::vec4(-25.f, 0.f, 25.f, 1.f));
-		m_pLightingSystem->addPointLight(glm::vec4(-25.f, 0.f, -25.f, 1.f));
+		//m_pLightingSystem->addPointLight(glm::vec4(25.f, 0.f, 25.f, 1.f));
+		//m_pLightingSystem->addPointLight(glm::vec4(25.f, 0.f, -25.f, 1.f));
+		//m_pLightingSystem->addPointLight(glm::vec4(-25.f, 0.f, 25.f, 1.f));
+		//m_pLightingSystem->addPointLight(glm::vec4(-25.f, 0.f, -25.f, 1.f));
 				
 		m_pLightingSystem->addShaderToUpdate(Renderer::getInstance().getShader("lighting"));
 		m_pLightingSystem->addShaderToUpdate(Renderer::getInstance().getShader("lightingWireframe"));

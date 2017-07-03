@@ -2,9 +2,8 @@
 #include <glSkel/Object.h>
 #include <glSkel/BroadcastSystem.h>
 #include <glSkel/Mesh.h>
-#include <glSkel/Shader.h>
 
-#include <glSkel\BulletDebugDrawer.h>
+#include <glSkel/BulletDebugDrawer.h>
 
 class Chondrus : public Object, public BroadcastSystem::Listener
 {
@@ -24,16 +23,19 @@ public:
 private:
 	Mesh* mesh;
 	std::vector<GLuint> indices;
+	GLuint m_glDiffTex, m_glSpecTex;
 
 	GLfloat m_fLength, m_fWidth;
 	GLuint nVertsTall;
+
+	bool m_bWireframe;
 
 	void buildModel();
 
 	float calculateEnvelope(float currentRatio, float begin, float max1, float max2, float end);
 	float getRandRatio();
 	
-	std::vector<Texture> loadTextures();
+	void loadTextures();
 
 	bool saveAsObj(std::string name = "untitled_model");	
 

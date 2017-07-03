@@ -162,6 +162,8 @@
     <None Include="..\shaders\lamp.vs" />
     <None Include="..\shaders\lighting.frag" />
     <None Include="..\shaders\lighting.vert" />
+    <None Include="..\shaders\lightingWF.frag" />
+    <None Include="..\shaders\lightingWF.geom" />
     <None Include="..\shaders\line.frag" />
     <None Include="..\shaders\line.vs" />
     <None Include="..\shaders\multiple_lights.frag" />

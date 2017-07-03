@@ -64,7 +64,7 @@ void Renderer::toggleWireframe()
 //-----------------------------------------------------------------------------
 void Renderer::SetupShaders()
 {
-	m_Shaders.SetVersion("420");
+	m_Shaders.SetVersion("450");
 
 	m_Shaders.SetPreambleFile("GLSLpreamble.h");
 

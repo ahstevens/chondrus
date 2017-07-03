@@ -23,14 +23,13 @@ LightingSystem::~LightingSystem()
 
 void LightingSystem::addShaderToUpdate(GLuint * shader)
 {
-	m_vpShadersWithLighting.push_back(shader);
+	if (shader)
+		m_vpShadersWithLighting.push_back(shader);
 }
 
 // Uses the current shader
 void LightingSystem::update(glm::mat4 view)
 {
-	glm::vec3 black(0.f);
-
 	for (auto pShader : m_vpShadersWithLighting)
 	{
 		if (*pShader)

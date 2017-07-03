@@ -1,9 +1,10 @@
 #include "mesh.h"
 #pragma once
 
+#include "GLSLpreamble.h"
+
 Mesh::Mesh(std::vector<glm::vec3> vvec3Vertices, std::vector<GLuint> vuiIndices)
 {
-	this->m_vTextures = vTextures;
 	this->m_pBoundaryEdge = NULL;
 
 	std::cout << "\t*Initializing " << vvec3Vertices.size() << " vertices... ";
@@ -689,7 +690,7 @@ void Mesh::updateBoundaryEdgePointer()
 	}
 }
 
-void Mesh::makeBufferVertices(std::vector<Vertex>& vVertices, std::vector<GLuint>& vIndices)
+void Mesh::makeBufferVertices(std::vector<Vertex>& vVertices, std::vector<GLushort>& vIndices)
 {
 	vVertices.resize(m_vpVertices.size()); // reserve memory for vertices
 
@@ -722,7 +723,7 @@ void Mesh::makeBufferVertices(std::vector<Vertex>& vVertices, std::vector<GLuint
 
 		do
 		{
-			vIndices.push_back(e->head->id);
+			vIndices.push_back((GLshort)e->head->id);
 			e = e->next;
 		} while (e != begin);
 	}
@@ -766,7 +767,7 @@ void Mesh::checkEdges()
 void Mesh::setupGL()
 {
 	std::vector<Vertex> bufferVertices;
-	std::vector<GLuint> bufferIndices;
+	std::vector<GLushort> bufferIndices;
 
 	makeBufferVertices(bufferVertices, bufferIndices);
 
@@ -778,24 +779,21 @@ void Mesh::setupGL()
 	glBindVertexArray(this->m_glVAO);
 	// Load data into vertex buffers
 	glBindBuffer(GL_ARRAY_BUFFER, this->m_glVBO);
-	// A great thing about structs is that their memory layout is sequential for all its items.
-	// The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
-	// again translates to 3/2 floats which translates to a byte array.
 	glBufferData(GL_ARRAY_BUFFER, bufferVertices.size() * sizeof(Vertex), &bufferVertices[0], GL_STREAM_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->m_glEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferIndices.size() * sizeof(GLuint), &bufferIndices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferIndices.size() * sizeof(GLushort), &bufferIndices[0], GL_STATIC_DRAW);
 
 	// Set the vertex attribute pointers
 	// Vertex Positions
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
+	glEnableVertexAttribArray(POSITION_ATTRIB_LOCATION);
+	glVertexAttribPointer(POSITION_ATTRIB_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, pos));
 	// Vertex Normals
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, norm));
+	glEnableVertexAttribArray(NORMAL_ATTRIB_LOCATION);
+	glVertexAttribPointer(NORMAL_ATTRIB_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, norm));
 	// Vertex Texture Coords
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, tex));
+	glEnableVertexAttribArray(TEXCOORD_ATTRIB_LOCATION);
+	glVertexAttribPointer(TEXCOORD_ATTRIB_LOCATION, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, tex));
 
 	glBindVertexArray(0);
 }

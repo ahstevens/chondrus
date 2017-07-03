@@ -42,6 +42,9 @@ struct Payload
 
 Chondrus::Chondrus(float solidThickness, float length, float width, glm::vec3 position, glm::mat3 orientation)
 	: Object(position, orientation)
+	, m_glDiffTex(0)
+	, m_glSpecTex(0)
+	, m_bWireframe(false)
 {
 	m_fLength = length;
 	m_fWidth = width;
@@ -83,7 +86,9 @@ void Chondrus::receiveEvent(Object* obj, const int event, void * data)
 	{	
 		int key;
 		memcpy(&key, data, sizeof(key));
-		
+
+		if (key == GLFW_KEY_M)
+			m_bWireframe = !m_bWireframe;
 
 		if (key == GLFW_KEY_KP_ENTER)
 			saveAsObj("test");
@@ -102,13 +107,15 @@ void Chondrus::Draw()
 
 	Renderer::RendererSubmission rs;
 	rs.primitiveType = GL_TRIANGLES;
-	rs.shaderName = "lighting";
+	rs.shaderName = m_bWireframe ? "lightingWireframe" : "lighting";
 	rs.VAO = mesh->getVAO();
-	rs.vertCount = mesh->getVertexCount();
-	rs.diffuseTex = 0;
-	rs.specularTex = 0;
-	rs.specularExponent = 10.f;
+	rs.vertCount = mesh->getFaceCount() * 3;
+	rs.diffuseTex = m_glDiffTex;
+	rs.specularTex = m_glSpecTex;
+	rs.specularExponent = 32.f;
 	rs.modelToWorldTransform = modelMat;
+
+	Renderer::getInstance().addToDynamicRenderQueue(rs);
 }
 
 void Chondrus::buildModel()
@@ -169,7 +176,9 @@ void Chondrus::buildModel()
 	//leftStrip.glueRight(rightStrip);
 
 	std::cout << "Creating DCEL mesh from geometry strip that is " << leftStrip.getWidthVertexCount() << " verts wide and " << leftStrip.getHeightVertexCount() << " verts long" << std::endl;
-	mesh = new Mesh(leftStrip.getVertices(), leftStrip.getIndices(), this->loadTextures());
+	mesh = new Mesh(leftStrip.getVertices(), leftStrip.getIndices());
+	
+	loadTextures();
 }
 
 float Chondrus::calculateEnvelope(float currentRatio, float beginRatio, float maxRatio1, float maxRatio2, float endRatio)
@@ -197,18 +206,16 @@ float Chondrus::getRandRatio()
 	return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
-std::vector<Texture> Chondrus::loadTextures()
+void Chondrus::loadTextures()
 {
 	// Load textures
-	Texture diffuseMap, specularMap;
-	glGenTextures(1, &diffuseMap.id);
-	glGenTextures(1, &specularMap.id);
+	glGenTextures(1, &m_glDiffTex);
+	glGenTextures(1, &m_glSpecTex);
 	int width = 1, height = 1;
-	unsigned char image[3] = { 0xFF, 0xFF, 0xFF };
+	unsigned char image[3] = { 0x88, 0xFF, 0x88 };
 
 	// Diffuse map
-	diffuseMap.type = "texture_diffuse";
-	glBindTexture(GL_TEXTURE_2D, diffuseMap.id);
+	glBindTexture(GL_TEXTURE_2D, m_glDiffTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, &image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -217,21 +224,18 @@ std::vector<Texture> Chondrus::loadTextures()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 
 	// Specular map
-	specularMap.type = "texture_specular";
-	image[1] = 0x00;
-	image[2] = 0x00;
-	glBindTexture(GL_TEXTURE_2D, specularMap.id);
+	//image[0] = 0xFF;
+	//image[1] = 0xFF;
+	//image[2] = 0xFF;
+	glBindTexture(GL_TEXTURE_2D, m_glSpecTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, &image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+
 	glBindTexture(GL_TEXTURE_2D, 0);
-
-	std::vector<Texture> textures = { diffuseMap, specularMap };
-
-	return textures;
 }
 
 bool fileExists(const std::string &fname)
