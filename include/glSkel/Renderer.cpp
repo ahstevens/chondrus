@@ -7,7 +7,7 @@
 
 #include <glSkel/DebugDrawer.h>
 
-#include <glSkel/GLSLpreamble.h>
+#include "GLSLpreamble.h"
 
 Renderer::Renderer()
 	: m_glFrameUBO(0)

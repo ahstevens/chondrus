@@ -11,7 +11,7 @@
 
 #include <bullet/LinearMath/btIDebugDraw.h>
 
-#include <glSkel/GLSLpreamble.h>
+#include "GLSLpreamble.h"
 
 class BulletDebugDrawer : public btIDebugDraw
 {
