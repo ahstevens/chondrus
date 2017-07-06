@@ -5,8 +5,38 @@
 
 #include <glSkel/BulletDebugDrawer.h>
 
+struct Segment {
+	glm::vec3 begin;
+	glm::vec3 end;
+	float len;
+	float beginWidth;
+	float endWidth;
+	glm::vec3 beginNormal;
+	glm::vec3 endNormal;
+	Segment *parent;
+	std::vector<Segment*> children;
+
+	Segment()
+		: parent()
+	{}
+
+	std::vector<Segment*> getSiblings()
+	{
+		std::vector<Segment*> sibs;
+
+		if (parent != NULL)
+			for (auto const &child : parent->children)
+				if (child != this)
+					sibs.push_back(child);
+
+		return sibs;
+	}
+};
+
 class Chondrus : public Object, public BroadcastSystem::Listener
 {
+public:
+
 public:
 	Chondrus(float length, float width, float thickness, glm::vec3 position, glm::mat3 orientation);
 	~Chondrus();
@@ -21,12 +51,13 @@ public:
 	void Draw();
 
 private:
-	Mesh* mesh;
-	std::vector<GLuint> indices;
+	Segment* m_pRoot;
+
+	Mesh* m_pMesh;
 	GLuint m_glDiffTex, m_glSpecTex;
 
 	GLfloat m_fLength, m_fWidth;
-	GLuint nVertsTall;
+	GLuint m_nVertsTall;
 
 	bool m_bWireframe;
 
@@ -37,8 +68,10 @@ private:
 	
 	void loadTextures();
 
+	void drawBranches(Segment* root);
+
 	bool saveAsObj(std::string name = "untitled_model");	
 
-	BulletDebugDrawer *debugDrawer;
+	BulletDebugDrawer* m_pDebugDrawer;
 };
 

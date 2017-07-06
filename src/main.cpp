@@ -10,7 +10,7 @@
 #include <ctime> // for time()
 
 // Our classes
-#include <glSkel/Engine.h>
+#include <Engine.h>
 
 std::default_random_engine generator;
 

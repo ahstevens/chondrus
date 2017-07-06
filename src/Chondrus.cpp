@@ -11,6 +11,7 @@
 #include <sys/stat.h> // stat()
 
 #include <glSkel/Renderer.h>
+#include <glSkel/DebugDrawer.h>
 
 extern std::default_random_engine generator;
 
@@ -51,18 +52,18 @@ Chondrus::Chondrus(float solidThickness, float length, float width, glm::vec3 po
 
 	std::cout << "Length: " << m_fLength << " | Width: " << m_fWidth << std::endl;
 
-	this->nVertsTall = static_cast<GLuint>(m_fLength / lengthGridSpacing);
+	m_nVertsTall = static_cast<GLuint>(m_fLength / lengthGridSpacing);
 
-	this->buildModel();
+	buildModel();
 
-	debugDrawer = new BulletDebugDrawer();
+	m_pDebugDrawer = new BulletDebugDrawer();
 }
 
 
 Chondrus::~Chondrus()
 {
-	if (mesh)
-		delete(mesh);
+	if (m_pMesh)
+		delete(m_pMesh);
 }
 
 float Chondrus::getLength()
@@ -103,13 +104,15 @@ void Chondrus::receiveEvent(Object* obj, const int event, void * data)
 
 void Chondrus::Draw()
 {
+	drawBranches(m_pRoot);
+
 	glm::mat4 modelMat = glm::translate(glm::mat4(), m_vec3Position) * glm::mat4(m_mat3Rotation);
 
 	Renderer::RendererSubmission rs;
 	rs.primitiveType = GL_TRIANGLES;
 	rs.shaderName = m_bWireframe ? "lightingWireframe" : "lighting";
-	rs.VAO = mesh->getVAO();
-	rs.vertCount = mesh->getFaceCount() * 3;
+	rs.VAO = m_pMesh->getVAO();
+	rs.vertCount = m_pMesh->getFaceCount() * 3;
 	rs.diffuseTex = m_glDiffTex;
 	rs.specularTex = m_glSpecTex;
 	rs.specularExponent = 32.f;
@@ -120,16 +123,32 @@ void Chondrus::Draw()
 
 void Chondrus::buildModel()
 {
+	m_pRoot = new Segment();
+	m_pRoot->begin = glm::vec3(0.f);
+	m_pRoot->end = glm::vec3(0.f, 33.f, 0.f);
+
+	Segment* branch = new Segment();
+	branch->parent = m_pRoot;
+	branch->begin = glm::vec3(0.f, 33.f, 0.f);
+	branch->end = glm::vec3(20.f, 45.f, 0.f);
+	m_pRoot->children.push_back(branch);
+
+	branch = new Segment();
+	branch->parent = m_pRoot;
+	branch->begin = glm::vec3(0.f, 33.f, 0.f);
+	branch->end = glm::vec3(-20.f, 45.f, 0.f);
+	m_pRoot->children.push_back(branch);
+
 	std::vector<std::vector<glm::vec3>> vertices; // row major
 	glm::vec3 tempVert;
 
 	float edgeWidthPercent = 0.5f;
 	float edgeWidth = m_fWidth * edgeWidthPercent;
 	
-	for (GLuint row = 0; row < nVertsTall; ++row)
+	for (GLuint row = 0; row < m_nVertsTall; ++row)
 	{
 		std::vector<glm::vec3> vecRow;
-		GLfloat dy = static_cast<GLfloat>(row) / static_cast<GLfloat>(nVertsTall - 1);
+		GLfloat dy = static_cast<GLfloat>(row) / static_cast<GLfloat>(m_nVertsTall - 1);
 
 		for (GLuint col = 0; col < edge_nVertsWide; ++col)
 		{
@@ -150,10 +169,10 @@ void Chondrus::buildModel()
 	GeometryStrip leftStrip(vertices);
 	
 	vertices.clear();
-	for (GLuint row = 0; row < nVertsTall; ++row)
+	for (GLuint row = 0; row < m_nVertsTall; ++row)
 	{
 		std::vector<glm::vec3> vecRow;
-		GLfloat dy = static_cast<GLfloat>(row) / static_cast<GLfloat>(nVertsTall - 1);
+		GLfloat dy = static_cast<GLfloat>(row) / static_cast<GLfloat>(m_nVertsTall - 1);
 
 		for (GLuint col = 0; col < edge_nVertsWide; ++col)
 		{
@@ -176,7 +195,7 @@ void Chondrus::buildModel()
 	//leftStrip.glueRight(rightStrip);
 
 	std::cout << "Creating DCEL mesh from geometry strip that is " << leftStrip.getWidthVertexCount() << " verts wide and " << leftStrip.getHeightVertexCount() << " verts long" << std::endl;
-	mesh = new Mesh(leftStrip.getVertices(), leftStrip.getIndices());
+	m_pMesh = new Mesh(leftStrip.getVertices(), leftStrip.getIndices());
 	
 	loadTextures();
 }
@@ -238,6 +257,14 @@ void Chondrus::loadTextures()
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+void Chondrus::drawBranches(Segment * root)
+{
+	for (auto const &child : root->children)
+		drawBranches(child);
+
+	DebugDrawer::getInstance().drawLine(root->begin, root->end);
+}
+
 bool fileExists(const std::string &fname)
 {
 	struct stat buffer;
@@ -288,7 +315,7 @@ bool Chondrus::saveAsObj(std::string name)
 
 	std::vector<int> inds;
 	std::vector<glm::vec3> verts;
-	mesh->getIndexedVertices(inds, verts);
+	m_pMesh->getIndexedVertices(inds, verts);
 
 	for (int i = 0; i < inds.size(); i += 3)
 	{

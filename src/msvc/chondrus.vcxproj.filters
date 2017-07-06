@@ -42,6 +42,12 @@
     <ClCompile Include="..\..\include\glSkel\Renderer.cpp">
       <Filter>Includes</Filter>
     </ClCompile>
+    <ClCompile Include="..\LSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\GLFWInputBroadcaster.h">
@@ -54,9 +60,6 @@
       <Filter>Includes</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\glSkel\camera.h">
-      <Filter>Includes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\glSkel\Engine.h">
       <Filter>Includes</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\glSkel\Gabor.h">
@@ -91,6 +94,12 @@
     </ClInclude>
     <ClInclude Include="..\..\include\glSkel\mesh.h">
       <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
