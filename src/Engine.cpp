@@ -118,11 +118,11 @@ bool Engine::init()
 	generateModels();
 
 	lsys = new LSystem();
-	lsys->setIterations(5);
-	lsys->setAngle(90.f);
-	lsys->setSegmentLength(2.f);
-	lsys->setStart('X');
-	lsys->addRule('X', "^<XF^<XFX-F^>>XFXvF+>>XFX-F>X->");
+	lsys->setIterations(3);
+	lsys->setAngle(30.f);
+	lsys->setSegmentLength(5.f);
+	lsys->setStart('F');
+	lsys->addRule('F', "F[-F][+F]");
 	//lsys->addRule('X', "-YF+XFX+FY-");
 	//lsys->addRule('Y', "+XF-YFY-FX+");
 	//std::cout << lsys->run() << std::endl;

@@ -34,7 +34,7 @@ int main(int argc, char * argv[])
 
 	engine->mainLoop();
 
-	glfwTerminate();
+	//glfwTerminate();
 
     return EXIT_SUCCESS;
 }

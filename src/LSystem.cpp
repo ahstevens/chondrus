@@ -100,7 +100,9 @@ void LSystem::draw()
 	if (m_bNeedsRefresh)
 	{
 		glm::vec3 turtlePos(0.f);
-		glm::quat heading;
+		glm::quat turtleHeading;
+
+		std::vector<std::pair<glm::vec3, glm::quat>> turtleStack;
 
 		std::vector<Vertex> pts;
 		m_usInds.clear();
@@ -114,7 +116,7 @@ void LSystem::draw()
 			{
 			case 'F':
 			{
-				glm::vec3 headingVec = glm::rotate(heading, glm::vec3(1.f, 0.f, 0.f));
+				glm::vec3 headingVec = glm::rotate(turtleHeading, glm::vec3(1.f, 0.f, 0.f));
 				v.pos = turtlePos;
 				v.col = glm::vec4((headingVec + 1.f) * 0.5f, 1.f);
 				pts.push_back(v);
@@ -127,7 +129,7 @@ void LSystem::draw()
 			}
 			case 'B':
 			{
-				glm::vec3 headingVec = glm::rotate(heading, glm::vec3(1.f, 0.f, 0.f));
+				glm::vec3 headingVec = glm::rotate(turtleHeading, glm::vec3(1.f, 0.f, 0.f));
 				v.pos = turtlePos;
 				v.col = glm::vec4((headingVec + 1.f) * 0.5f, 1.f);
 				pts.push_back(v);
@@ -139,22 +141,30 @@ void LSystem::draw()
 				break;
 			}
 			case '+':
-				heading = glm::rotate(heading, glm::radians(m_fAngle), glm::vec3(0.f, 0.f, 1.f));
+				turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 0.f, 1.f));
 				break;
 			case '-':
-				heading = glm::rotate(heading, glm::radians(-m_fAngle), glm::vec3(0.f, 0.f, 1.f));
+				turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 0.f, 1.f));
 				break;
 			case '^':
-				heading = glm::rotate(heading, glm::radians(m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+				turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 1.f, 0.f));
 				break;
 			case 'v':
-				heading = glm::rotate(heading, glm::radians(-m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+				turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 1.f, 0.f));
 				break;
 			case '<':
-				heading = glm::rotate(heading, glm::radians(m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+				turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(1.f, 0.f, 0.f));
 				break;
 			case '>':
-				heading = glm::rotate(heading, glm::radians(-m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+				turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+				break;
+			case '[':
+				turtleStack.push_back(std::make_pair(turtlePos, turtleHeading));
+				break;
+			case ']':
+				turtlePos = turtleStack.back().first;
+				turtleHeading = turtleStack.back().second;
+				turtleStack.pop_back();
 				break;
 			}
 		}
@@ -173,7 +183,7 @@ void LSystem::draw()
 	rs.shaderName = "flat";
 	rs.VAO = m_glVAO;
 	rs.vertCount = m_usInds.size();
-	rs.modelToWorldTransform = glm::mat4();
+	rs.modelToWorldTransform = glm::mat4_cast(glm::rotate(glm::quat(), glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f)));
 
 	Renderer::getInstance().addToDynamicRenderQueue(rs);
 }
