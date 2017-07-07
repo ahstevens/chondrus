@@ -14,13 +14,16 @@ public:
 
 	void setStart(char symbol);
 	void setIterations(unsigned int iters);
+	void setAngle(float angle);
+	void setSegmentLength(float len);
 	bool addRule(char symbol, std::string replacement);
 
 	std::string run();
 
-	void draw(float angle, float segmentLength);
+	void draw();
 
 private:
+	float m_fAngle, m_fSegLen;
 	unsigned int m_nIters;
 	std::map<char, std::string> m_mapRules;
 	char m_chStartSymbol;

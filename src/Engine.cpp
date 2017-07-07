@@ -118,10 +118,13 @@ bool Engine::init()
 	generateModels();
 
 	lsys = new LSystem();
-	lsys->setIterations(4);
+	lsys->setIterations(5);
+	lsys->setAngle(90.f);
+	lsys->setSegmentLength(2.f);
 	lsys->setStart('X');
-	lsys->addRule('X', "-YF+XFX+FY-");
-	lsys->addRule('Y', "+XF-YFY-FX+");
+	lsys->addRule('X', "^<XF^<XFX-F^>>XFXvF+>>XFX-F>X->");
+	//lsys->addRule('X', "-YF+XFX+FY-");
+	//lsys->addRule('Y', "+XF-YFY-FX+");
 	//std::cout << lsys->run() << std::endl;
 
 	return true;
@@ -150,7 +153,7 @@ void Engine::mainLoop()
 		//DebugDrawer::getInstance().drawLine(glm::vec3(0.f, 33.f, 0.f), glm::vec3(20.f, 50.f, 0.f));
 		//DebugDrawer::getInstance().drawLine(glm::vec3(0.f, 33.f, 0.f), glm::vec3(-20.f, 50.f, 0.f));
 
-		lsys->draw(90.f, 2.f);
+		lsys->draw();
 
 		Renderer::getInstance().RenderFrame(m_iWidth, m_iHeight);
 

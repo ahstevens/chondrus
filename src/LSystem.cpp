@@ -2,6 +2,9 @@
 
 #include <glSkel/Renderer.h>
 
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 struct Vertex {
 	glm::vec3 pos;
 	glm::vec3 norm;
@@ -68,6 +71,16 @@ void LSystem::setIterations(unsigned int iters)
 	m_bNeedsRefresh = true;
 }
 
+void LSystem::setAngle(float angle)
+{
+	m_fAngle = angle;
+}
+
+void LSystem::setSegmentLength(float len)
+{
+	m_fSegLen = len;
+}
+
 // returns true if a rule already exists for the symbol
 bool LSystem::addRule(char symbol, std::string replacement)
 {
@@ -103,12 +116,12 @@ std::string LSystem::run()
 	return m_strResult;
 }
 
-void LSystem::draw(float angleDeg, float segmentLength)
+void LSystem::draw()
 {
 	if (m_bNeedsRefresh)
 	{
 		glm::vec3 turtlePos(0.f);
-		float turtleHeading(0.f); // radians
+		glm::quat heading;
 
 		std::vector<Vertex> pts;
 		m_usInds.clear();
@@ -118,38 +131,54 @@ void LSystem::draw(float angleDeg, float segmentLength)
 		{
 			Vertex v;
 			v.tex = glm::vec2(0.5f);
-
+			
 			switch (c)
 			{
 			case 'F':
 			{
-				glm::vec3 headingVec = glm::normalize(glm::vec3(cosf(glm::radians(turtleHeading)), sinf(glm::radians(turtleHeading)), 0.f));
-				v.pos = v.norm = turtlePos;
+				glm::vec3 headingVec = glm::rotate(heading, glm::vec3(1.f, 0.f, 0.f));
+				v.pos = turtlePos;
+				v.norm = v.pos;
 				pts.push_back(v);
 				m_usInds.push_back(currInd++);
-				v.pos = v.norm = turtlePos + headingVec * segmentLength;
+				v.pos = turtlePos + headingVec * m_fSegLen;
+				v.norm = v.pos;
 				pts.push_back(v);
 				m_usInds.push_back(currInd++);
-				turtlePos += headingVec * segmentLength;
+				turtlePos += headingVec * m_fSegLen;
 				break;
 			}
 			case 'B':
 			{
-				glm::vec3 headingVec = glm::normalize(glm::vec3(cosf(glm::radians(turtleHeading)), sinf(glm::radians(turtleHeading)), 0.f));
-				v.pos = v.norm = turtlePos;
+				glm::vec3 headingVec = glm::rotate(heading, glm::vec3(1.f, 0.f, 0.f));
+				v.pos = turtlePos;
+				v.norm = v.pos;
 				pts.push_back(v);
 				m_usInds.push_back(currInd++);
-				v.pos = v.norm = turtlePos - headingVec * segmentLength;
+				v.pos = turtlePos - headingVec * m_fSegLen;
+				v.norm = v.pos;
 				pts.push_back(v);
 				m_usInds.push_back(currInd++);
-				turtlePos -= headingVec * segmentLength;
+				turtlePos -= headingVec * m_fSegLen;
 				break;
 			}
 			case '+':
-				turtleHeading -= angleDeg;
+				heading = glm::rotate(heading, glm::radians(m_fAngle), glm::vec3(0.f, 0.f, 1.f));
 				break;
 			case '-':
-				turtleHeading += angleDeg;
+				heading = glm::rotate(heading, glm::radians(-m_fAngle), glm::vec3(0.f, 0.f, 1.f));
+				break;
+			case '^':
+				heading = glm::rotate(heading, glm::radians(m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+				break;
+			case 'v':
+				heading = glm::rotate(heading, glm::radians(-m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+				break;
+			case '<':
+				heading = glm::rotate(heading, glm::radians(m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+				break;
+			case '>':
+				heading = glm::rotate(heading, glm::radians(-m_fAngle), glm::vec3(1.f, 0.f, 0.f));
 				break;
 			}
 		}
