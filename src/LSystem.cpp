@@ -7,8 +7,7 @@
 
 struct Vertex {
 	glm::vec3 pos;
-	glm::vec3 norm;
-	glm::vec2 tex;
+	glm::vec4 col;
 };
 
 LSystem::LSystem()
@@ -28,31 +27,11 @@ LSystem::LSystem()
 	// Vertex Positions
 	glEnableVertexAttribArray(POSITION_ATTRIB_LOCATION);
 	glVertexAttribPointer(POSITION_ATTRIB_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, pos));
-	// Vertex Normals
-	glEnableVertexAttribArray(NORMAL_ATTRIB_LOCATION);
-	glVertexAttribPointer(NORMAL_ATTRIB_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, norm));
-	// Vertex Texture Coords
-	glEnableVertexAttribArray(TEXCOORD_ATTRIB_LOCATION);
-	glVertexAttribPointer(TEXCOORD_ATTRIB_LOCATION, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, tex));
+	// Vertex Colors
+	glEnableVertexAttribArray(COLOR_ATTRIB_LOCATION);
+	glVertexAttribPointer(COLOR_ATTRIB_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, col));
 
 	glBindVertexArray(0);
-
-
-	// Load textures
-	glGenTextures(1, &m_glTexture);
-	int width = 1, height = 1;
-	unsigned char image[3] = { 0x88, 0x11, 0x33 };
-
-	// Diffuse map
-	glBindTexture(GL_TEXTURE_2D, m_glTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, &image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 LSystem::~LSystem()
@@ -130,7 +109,6 @@ void LSystem::draw()
 		for (auto const& c : run())
 		{
 			Vertex v;
-			v.tex = glm::vec2(0.5f);
 			
 			switch (c)
 			{
@@ -138,11 +116,10 @@ void LSystem::draw()
 			{
 				glm::vec3 headingVec = glm::rotate(heading, glm::vec3(1.f, 0.f, 0.f));
 				v.pos = turtlePos;
-				v.norm = v.pos;
+				v.col = glm::vec4((headingVec + 1.f) * 0.5f, 1.f);
 				pts.push_back(v);
 				m_usInds.push_back(currInd++);
 				v.pos = turtlePos + headingVec * m_fSegLen;
-				v.norm = v.pos;
 				pts.push_back(v);
 				m_usInds.push_back(currInd++);
 				turtlePos += headingVec * m_fSegLen;
@@ -152,11 +129,10 @@ void LSystem::draw()
 			{
 				glm::vec3 headingVec = glm::rotate(heading, glm::vec3(1.f, 0.f, 0.f));
 				v.pos = turtlePos;
-				v.norm = v.pos;
+				v.col = glm::vec4((headingVec + 1.f) * 0.5f, 1.f);
 				pts.push_back(v);
 				m_usInds.push_back(currInd++);
 				v.pos = turtlePos - headingVec * m_fSegLen;
-				v.norm = v.pos;
 				pts.push_back(v);
 				m_usInds.push_back(currInd++);
 				turtlePos -= headingVec * m_fSegLen;
@@ -188,18 +164,15 @@ void LSystem::draw()
 		glBufferData(GL_ARRAY_BUFFER, pts.size() * sizeof(Vertex), &pts[0], GL_STREAM_DRAW);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->m_glEBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_usInds.size() * sizeof(GLushort), 0, GL_STATIC_DRAW);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_usInds.size() * sizeof(GLushort), &m_usInds[0], GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_usInds.size() * sizeof(GLushort), 0, GL_STREAM_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_usInds.size() * sizeof(GLushort), &m_usInds[0], GL_STREAM_DRAW);
 	}
 
 	Renderer::RendererSubmission rs;
 	rs.primitiveType = GL_LINES;
-	rs.shaderName = "lighting";
+	rs.shaderName = "flat";
 	rs.VAO = m_glVAO;
 	rs.vertCount = m_usInds.size();
-	rs.diffuseTex = m_glTexture;
-	rs.specularTex = m_glTexture;
-	rs.specularExponent = 32.f;
 	rs.modelToWorldTransform = glm::mat4();
 
 	Renderer::getInstance().addToDynamicRenderQueue(rs);

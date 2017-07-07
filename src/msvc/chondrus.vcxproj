@@ -161,8 +161,8 @@ xcopy /y "$(ProjectDir)..\GLSLpreamble.h" "$(OutputPath)"</Command>
     <ClInclude Include="..\LSystem.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shaders\debugDrawer.frag" />
-    <None Include="..\shaders\debugDrawer.vert" />
+    <None Include="..\shaders\flat.frag" />
+    <None Include="..\shaders\flat.vert" />
     <None Include="..\shaders\lighting.frag" />
     <None Include="..\shaders\lighting.vert" />
     <None Include="..\shaders\lightingWF.frag" />

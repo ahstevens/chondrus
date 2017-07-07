@@ -34,7 +34,6 @@ private:
 
 	GLuint m_glVAO, m_glVBO, m_glEBO;
 	std::vector<GLushort> m_usInds;
-	GLuint m_glTexture;
 
 	std::string process(std::string oldstr);
 	std::string applyRules(char symbol);
