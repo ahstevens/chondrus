@@ -45,7 +45,7 @@ public:
 	LightingSystem();
 	~LightingSystem();
 
-	void addShaderToUpdate(GLuint* shader);
+	void registerShader(GLuint* shader);
 	void update(glm::mat4 view);
 
 	Light* addDirectLight(glm::vec4 direction = glm::vec4(-1.f, -1.f, -1.f, 0.f)

@@ -241,8 +241,8 @@ void Engine::init_lighting()
 	//m_pLightingSystem->addPointLight(glm::vec4(-25.f, 0.f, 25.f, 1.f));
 	//m_pLightingSystem->addPointLight(glm::vec4(-25.f, 0.f, -25.f, 1.f));
 
-	m_pLightingSystem->addShaderToUpdate(Renderer::getInstance().getShader("lighting"));
-	m_pLightingSystem->addShaderToUpdate(Renderer::getInstance().getShader("lightingWireframe"));
+	m_pLightingSystem->registerShader(Renderer::getInstance().getShader("lighting"));
+	m_pLightingSystem->registerShader(Renderer::getInstance().getShader("lightingWireframe"));
 }
 
 void Engine::init_camera()

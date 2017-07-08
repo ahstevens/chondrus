@@ -21,7 +21,7 @@ LightingSystem::~LightingSystem()
 {
 }
 
-void LightingSystem::addShaderToUpdate(GLuint * shader)
+void LightingSystem::registerShader(GLuint * shader)
 {
 	if (shader)
 		m_vpShadersWithLighting.push_back(shader);
