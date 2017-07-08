@@ -118,11 +118,11 @@ bool Engine::init()
 	generateModels();
 
 	lsys = new LSystem();
-	lsys->setIterations(3);
-	lsys->setAngle(30.f);
-	lsys->setSegmentLength(5.f);
+	lsys->setIterations(5);
+	lsys->setAngle(22.f);
+	lsys->setSegmentLength(1.f);
 	lsys->setStart('F');
-	lsys->addRule('F', "F[-F][+F]");
+	lsys->addRule('F', "FF-[vF^F^F]+[^FvFvF]<[^F^FvF]");
 	//lsys->addRule('X', "-YF+XFX+FY-");
 	//lsys->addRule('Y', "+XF-YFY-FX+");
 	//std::cout << lsys->run() << std::endl;
@@ -247,7 +247,7 @@ void Engine::init_lighting()
 
 void Engine::init_camera()
 {
-	m_pCamera = new Camera(glm::vec3(0.0f, 25.0f, 50.0f), m_vec3DefaultUp, m_iWidth, m_iHeight);
+	m_pCamera = new Camera(glm::vec3(0.f, 35.f, 50.f), m_vec3DefaultUp, m_iWidth, m_iHeight);
 	GLFWInputBroadcaster::getInstance().attach(m_pCamera);
 }
 
