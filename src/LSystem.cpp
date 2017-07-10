@@ -88,13 +88,14 @@ bool LSystem::addRule(char symbol, std::string replacement)
 bool LSystem::addStochasticRules(char symbol, std::vector<std::pair<float, std::string>> replacementRules)
 {
 	float sum = 0.f;
+	float epsilon = 0.00001;
 	for (auto const &rule : replacementRules)
 	{
 		sum += rule.first;
 	}
-	if (sum != 1.f)
+	if (fabs(sum - 1.f) > epsilon)
 	{
-		std::cerr << "Error: Stochastic replacement rules for symbol '" << symbol << "' do not have probabilities that add up to 1.0" << std::endl;
+		std::cerr << "Error: Stochastic replacement rules for symbol '" << symbol << "' do not have probabilities that add up to 1.0 (total = " << sum << ")" << std::endl;
 		return false;
 	}
 
@@ -207,7 +208,7 @@ void LSystem::draw()
 				turtleStack.pop_back();
 				break;
 			default:
-				std::cerr << "Error: Symbol '" << c << "' not found in ruleset." << std::endl;
+				std::cerr << "Error: Symbol '" << c << "' not found in turtle commands." << std::endl;
 			}
 		}
 
