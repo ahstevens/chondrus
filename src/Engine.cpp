@@ -121,19 +121,31 @@ bool Engine::init()
 	generateModels();
 
 	lsys = new LSystem();
-	lsys->setIterations(5);
-	lsys->setAngle(22.f);
+	lsys->setIterations(6);
+	lsys->setAngle(25.7f);
 	lsys->setSegmentLength(1.f);
 	lsys->setStart('F');
-	//lsys->addRule('F', "F[+F][-F]");
-	//lsys->addRule('F', "FF-[vF^F^F]+[^FvFvF]<[^F^FvF]");
+	//lsys->addStochasticRules('F',
+	//{
+	//	std::make_pair(0.5f, std::string("F-F++F-F")),
+	//	std::make_pair(0.5f, std::string("F--F+F"))
+	//	
+	//});
 	lsys->addStochasticRules('F',
 	{
-		std::make_pair(0.25f, std::string("F[+F][-F]")), 
-		std::make_pair(0.25f, std::string("F[vF][^F]")),
-		std::make_pair(0.25f, std::string("F[<F][>F]")),
-		std::make_pair(0.25f, std::string("FF")) 
+		std::make_pair(0.33f, std::string("F[+F]F[-F]F")), 
+		std::make_pair(0.33f, std::string("F[+F]F")),
+		std::make_pair(0.34f, std::string("F[-F]F")),
 	});
+	//lsys->addStochasticRules('F',
+	//{
+	//	std::make_pair(0.25f, std::string("F[+F][-F]")), 
+	//	std::make_pair(0.25f, std::string("F[vF][^F]")),
+	//	std::make_pair(0.25f, std::string("F[<F][>F]")),
+	//	std::make_pair(0.25f, std::string("FF")) 
+	//});
+	//lsys->addRule('F', "F[+F][-F]");
+	//lsys->addRule('F', "FF-[vF^F^F]+[^FvFvF]<[^F^FvF]");
 	//lsys->addRule('X', "-YF+XFX+FY-");
 	//lsys->addRule('Y', "+XF-YFY-FX+");
 	//std::cout << lsys->run() << std::endl;

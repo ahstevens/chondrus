@@ -7,6 +7,8 @@
 
 #include <GL/glew.h>
 
+#include <glm/glm.hpp>
+
 class LSystem
 {
 public:	
@@ -36,7 +38,9 @@ private:
 	std::string m_strResult;
 
 	GLuint m_glVAO, m_glVBO, m_glEBO;
-	std::vector<GLushort> m_usInds;
+	std::vector<glm::vec3> m_vvec3Points;
+	std::vector<glm::vec4> m_vvec4Colors;
+	std::vector<GLushort> m_vusInds;
 
 	std::uniform_real_distribution<float> m_UniformDist;
 	std::mt19937 m_mtEngine; // Mersenne twister MT19937

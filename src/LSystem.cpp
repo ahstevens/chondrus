@@ -25,17 +25,15 @@ LSystem::LSystem()
 	glGenBuffers(1, &m_glEBO);
 
 	glBindVertexArray(this->m_glVAO);
-	// Load data into vertex buffers
-	glBindBuffer(GL_ARRAY_BUFFER, this->m_glVBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->m_glEBO);
+		// Bind the array and element buffers
+		glBindBuffer(GL_ARRAY_BUFFER, this->m_glVBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->m_glEBO);
 
-	// Set the vertex attribute pointers
-	// Vertex Positions
-	glEnableVertexAttribArray(POSITION_ATTRIB_LOCATION);
-	glVertexAttribPointer(POSITION_ATTRIB_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, pos));
-	// Vertex Colors
-	glEnableVertexAttribArray(COLOR_ATTRIB_LOCATION);
-	glVertexAttribPointer(COLOR_ATTRIB_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, col));
+		// Enable attribute arrays (with layouts to be defined later)
+		glEnableVertexAttribArray(POSITION_ATTRIB_LOCATION);
+		glVertexAttribPointer(POSITION_ATTRIB_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+		glEnableVertexAttribArray(COLOR_ATTRIB_LOCATION);
+		// color attribute pointer will be set once position array size is known for attrib pointer offset
 
 	glBindVertexArray(0);
 }
@@ -134,8 +132,9 @@ void LSystem::draw()
 
 		std::vector<std::pair<glm::vec3, glm::quat>> turtleStack;
 
-		std::vector<Vertex> pts;
-		m_usInds.clear();
+		m_vvec3Points.clear();
+		m_vvec4Colors.clear();
+		m_vusInds.clear();
 		GLushort currInd = 0;
 
 		for (auto const& c : run())
@@ -147,26 +146,37 @@ void LSystem::draw()
 			case 'F':
 			{
 				glm::vec3 headingVec = glm::rotate(turtleHeading, glm::vec3(1.f, 0.f, 0.f));
-				v.pos = turtlePos;
 				v.col = glm::vec4((headingVec + 1.f) * 0.5f, 1.f);
-				pts.push_back(v);
-				m_usInds.push_back(currInd++);
+
+				v.pos = turtlePos;
+				m_vvec3Points.push_back(v.pos);
+				m_vvec4Colors.push_back(v.col);
+				m_vusInds.push_back(currInd++);
+
 				v.pos = turtlePos + headingVec * m_fSegLen;
-				pts.push_back(v);
-				m_usInds.push_back(currInd++);
+				m_vvec3Points.push_back(v.pos);
+				m_vvec4Colors.push_back(v.col);
+				m_vusInds.push_back(currInd++);
+
 				turtlePos += headingVec * m_fSegLen;
+
 				break;
 			}
 			case 'B':
 			{
 				glm::vec3 headingVec = glm::rotate(turtleHeading, glm::vec3(1.f, 0.f, 0.f));
-				v.pos = turtlePos;
 				v.col = glm::vec4((headingVec + 1.f) * 0.5f, 1.f);
-				pts.push_back(v);
-				m_usInds.push_back(currInd++);
+
+				v.pos = turtlePos;
+				m_vvec3Points.push_back(v.pos);
+				m_vvec4Colors.push_back(v.col);
+				m_vusInds.push_back(currInd++);
+
 				v.pos = turtlePos - headingVec * m_fSegLen;
-				pts.push_back(v);
-				m_usInds.push_back(currInd++);
+				m_vvec3Points.push_back(v.pos);
+				m_vvec4Colors.push_back(v.col);
+				m_vusInds.push_back(currInd++);
+
 				turtlePos -= headingVec * m_fSegLen;
 				break;
 			}
@@ -202,19 +212,27 @@ void LSystem::draw()
 		}
 
 		glBindBuffer(GL_ARRAY_BUFFER, this->m_glVBO);
-		glBufferData(GL_ARRAY_BUFFER, pts.size() * sizeof(Vertex), 0, GL_STREAM_DRAW);
-		glBufferData(GL_ARRAY_BUFFER, pts.size() * sizeof(Vertex), &pts[0], GL_STREAM_DRAW);
+		// Buffer orphaning
+		glBufferData(GL_ARRAY_BUFFER, m_vvec3Points.size() * sizeof(glm::vec3) + m_vvec4Colors.size() * sizeof(glm::vec4), 0, GL_STREAM_DRAW);
+		// Sub buffer data for points, then colors
+		glBufferSubData(GL_ARRAY_BUFFER, 0, m_vvec3Points.size() * sizeof(glm::vec3), &m_vvec3Points[0]);
+		glBufferSubData(GL_ARRAY_BUFFER, m_vvec3Points.size() * sizeof(glm::vec3), m_vvec4Colors.size() * sizeof(glm::vec4), &m_vvec4Colors[0]);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->m_glEBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_usInds.size() * sizeof(GLushort), 0, GL_STREAM_DRAW);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_usInds.size() * sizeof(GLushort), &m_usInds[0], GL_STREAM_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_vusInds.size() * sizeof(GLushort), 0, GL_STREAM_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_vusInds.size() * sizeof(GLushort), &m_vusInds[0], GL_STREAM_DRAW);
+
+		// Set color sttribute pointer now that point array size is known
+		glBindVertexArray(this->m_glVAO);
+			glVertexAttribPointer(COLOR_ATTRIB_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (GLvoid*)(m_vvec3Points.size() * sizeof(glm::vec3)));
+		glBindVertexArray(0);
 	}
 
 	Renderer::RendererSubmission rs;
 	rs.primitiveType = GL_LINES;
 	rs.shaderName = "flat";
 	rs.VAO = m_glVAO;
-	rs.vertCount = m_usInds.size();
+	rs.vertCount = m_vusInds.size();
 	rs.modelToWorldTransform = glm::mat4_cast(glm::rotate(glm::quat(), glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f)));
 
 	Renderer::getInstance().addToDynamicRenderQueue(rs);
