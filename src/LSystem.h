@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <random>
 
 #include <GL/glew.h>
 
@@ -16,7 +17,9 @@ public:
 	void setIterations(unsigned int iters);
 	void setAngle(float angle);
 	void setSegmentLength(float len);
+	void setRefreshNeeded();
 	bool addRule(char symbol, std::string replacement);
+	bool addStochasticRules(char symbol, std::vector<std::pair<float, std::string>> replacementRules);
 
 	std::string run();
 
@@ -25,7 +28,7 @@ public:
 private:
 	float m_fAngle, m_fSegLen;
 	unsigned int m_nIters;
-	std::map<char, std::string> m_mapRules;
+	std::map<char, std::vector<std::pair<float, std::string>>> m_mapRules; // symbols map to vectors of replacement/probability pairs
 	char m_chStartSymbol;
 
 	bool m_bNeedsRefresh;
@@ -34,6 +37,9 @@ private:
 
 	GLuint m_glVAO, m_glVBO, m_glEBO;
 	std::vector<GLushort> m_usInds;
+
+	std::uniform_real_distribution<float> m_UniformDist;
+	std::mt19937 m_mtEngine; // Mersenne twister MT19937
 
 	std::string process(std::string oldstr);
 	std::string applyRules(char symbol);

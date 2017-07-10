@@ -76,7 +76,10 @@ void Engine::receiveEvent(Object * obj, const int event, void * data)
 		memcpy(&key, data, sizeof(key));
 
 		if (key == GLFW_KEY_R)
-			generateModels();
+		{
+			lsys->setRefreshNeeded();
+			//generateModels();
+		}
 		if (key == GLFW_KEY_SPACE)
 			m_bRunPhysics = !m_bRunPhysics;
 	}
@@ -122,7 +125,15 @@ bool Engine::init()
 	lsys->setAngle(22.f);
 	lsys->setSegmentLength(1.f);
 	lsys->setStart('F');
-	lsys->addRule('F', "FF-[vF^F^F]+[^FvFvF]<[^F^FvF]");
+	//lsys->addRule('F', "F[+F][-F]");
+	//lsys->addRule('F', "FF-[vF^F^F]+[^FvFvF]<[^F^FvF]");
+	lsys->addStochasticRules('F',
+	{
+		std::make_pair(0.25f, std::string("F[+F][-F]")), 
+		std::make_pair(0.25f, std::string("F[vF][^F]")),
+		std::make_pair(0.25f, std::string("F[<F][>F]")),
+		std::make_pair(0.25f, std::string("FF")) 
+	});
 	//lsys->addRule('X', "-YF+XFX+FY-");
 	//lsys->addRule('Y', "+XF-YFY-FX+");
 	//std::cout << lsys->run() << std::endl;

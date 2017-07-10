@@ -5,6 +5,10 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include <iostream>
+
+#include <random>
+
 struct Vertex {
 	glm::vec3 pos;
 	glm::vec4 col;
@@ -13,6 +17,8 @@ struct Vertex {
 LSystem::LSystem()
 	: m_nIters(0)
 	, m_bNeedsRefresh(true)
+	, m_mtEngine(std::random_device()())
+	, m_UniformDist(0.f, 1.f)
 {
 	glGenVertexArrays(1, &m_glVAO);
 	glGenBuffers(1, &m_glVBO);
@@ -60,12 +66,18 @@ void LSystem::setSegmentLength(float len)
 	m_fSegLen = len;
 }
 
+void LSystem::setRefreshNeeded()
+{
+	m_bNeedsRefresh = true;
+}
+
 // returns true if a rule already exists for the symbol
 bool LSystem::addRule(char symbol, std::string replacement)
 {
-	std::map<char, std::string>::iterator it = m_mapRules.find(symbol);
+	std::map<char, std::vector<std::pair<float, std::string>>>::iterator it = m_mapRules.find(symbol);
 
-	m_mapRules[symbol] = replacement;
+	m_mapRules[symbol].clear();
+	m_mapRules[symbol].push_back(std::make_pair(1.f, replacement));
 
 	m_bNeedsRefresh = true;
 
@@ -73,6 +85,24 @@ bool LSystem::addRule(char symbol, std::string replacement)
 		return true;
 	else
 		return false;
+}
+
+bool LSystem::addStochasticRules(char symbol, std::vector<std::pair<float, std::string>> replacementRules)
+{
+	float sum = 0.f;
+	for (auto const &rule : replacementRules)
+	{
+		sum += rule.first;
+	}
+	if (sum != 1.f)
+	{
+		std::cerr << "Error: Stochastic replacement rules for symbol '" << symbol << "' do not have probabilities that add up to 1.0" << std::endl;
+		return false;
+	}
+
+	m_mapRules[symbol] = replacementRules;
+
+	return true;
 }
 
 std::string LSystem::run()
@@ -166,6 +196,8 @@ void LSystem::draw()
 				turtleHeading = turtleStack.back().second;
 				turtleStack.pop_back();
 				break;
+			default:
+				std::cerr << "Error: Symbol '" << c << "' not found in ruleset." << std::endl;
 			}
 		}
 
@@ -200,10 +232,28 @@ std::string LSystem::process(std::string oldstr)
 
 std::string LSystem::applyRules(char symbol)
 {
-	std::map<char, std::string>::iterator it = m_mapRules.find(symbol);
+	// Check if replacement rule exists for symbol
+	std::map<char, std::vector<std::pair<float, std::string>>>::iterator it = m_mapRules.find(symbol);
 
+	// Rule Exists
 	if (it != m_mapRules.end())
-		return it->second;
-	else
+	{
+		float val = m_UniformDist(m_mtEngine);
+		float cumsum = 0.f;
+
+		for (auto const &rule : it->second)
+		{
+			cumsum += rule.first;
+			if (val <= cumsum)
+				return rule.second;
+		}
+
+		std::cerr << "Error: Failed to apply stochastic rules for symbol '" << symbol << "'!" << std::endl;
+
 		return std::string(1, symbol);
+	}
+	else // Rule does not exist
+	{
+		return std::string(1, symbol);
+	}
 }
