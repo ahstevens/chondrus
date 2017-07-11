@@ -9,7 +9,9 @@
 
 #include <glm/glm.hpp>
 
-class LSystem
+#include <glSkel/Object.h>
+
+class LSystem : public Object
 {
 public:	
 	LSystem();
@@ -22,6 +24,8 @@ public:
 	void setRefreshNeeded();
 	bool addRule(char symbol, std::string replacement);
 	bool addStochasticRules(char symbol, std::vector<std::pair<float, std::string>> replacementRules);
+
+
 
 	std::string run();
 

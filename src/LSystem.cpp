@@ -223,7 +223,7 @@ void LSystem::draw()
 	rs.shaderName = "flat";
 	rs.VAO = m_glVAO;
 	rs.vertCount = m_vusInds.size();
-	rs.modelToWorldTransform = glm::mat4_cast(glm::rotate(glm::quat(), glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f)));
+	rs.modelToWorldTransform = glm::mat4(m_mat3Rotation) * glm::mat4_cast(glm::rotate(glm::quat(), glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f)));
 
 	Renderer::getInstance().addToDynamicRenderQueue(rs);
 }

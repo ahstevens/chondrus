@@ -55,6 +55,11 @@ void GLFWInputBroadcaster::key_callback(GLFWwindow* window, int key, int scancod
 			getInstance().keys[key] = true;
 			getInstance().notify(NULL, BroadcastSystem::EVENT::KEY_PRESS, &key);
 		}
+		else if (action == GLFW_REPEAT)
+		{
+			getInstance().keys[key] = true;
+			getInstance().notify(NULL, BroadcastSystem::EVENT::KEY_REPEAT, &key);
+		}
 		else if (action == GLFW_RELEASE)
 		{
 			getInstance().keys[key] = false;

@@ -2,6 +2,8 @@
 
 #include "LSystem.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+
 LSystem* lsys;
 
 //-----------------------------------------------------------------------------
@@ -84,6 +86,29 @@ void Engine::receiveEvent(Object * obj, const int event, void * data)
 			m_bRunPhysics = !m_bRunPhysics;
 	}
 
+	if (event == BroadcastSystem::EVENT::KEY_PRESS || event == BroadcastSystem::EVENT::KEY_REPEAT)
+	{
+		int key;
+		memcpy(&key, data, sizeof(key));
+
+		if (key == GLFW_KEY_LEFT)
+		{
+			lsys->setOrientation(glm::mat3(glm::rotate(glm::mat4(lsys->getOrientation()), glm::radians(-1.f), glm::vec3(0.f, 1.f, 0.f))));
+		}
+		if (key == GLFW_KEY_RIGHT)
+		{
+			lsys->setOrientation(glm::mat3(glm::rotate(glm::mat4(lsys->getOrientation()), glm::radians(1.f), glm::vec3(0.f, 1.f, 0.f))));
+		}
+		if (key == GLFW_KEY_UP)
+		{
+			lsys->setOrientation(glm::mat3(glm::rotate(glm::mat4(lsys->getOrientation()), glm::radians(-1.f), glm::vec3(1.f, 0.f, 0.f))));
+		}
+		if (key == GLFW_KEY_DOWN)
+		{
+			lsys->setOrientation(glm::mat3(glm::rotate(glm::mat4(lsys->getOrientation()), glm::radians(1.f), glm::vec3(1.f, 0.f, 0.f))));
+		}
+	}
+
 	if (event == BroadcastSystem::EVENT::MOUSE_UNCLICK)
 	{
 		int button;
@@ -121,31 +146,27 @@ bool Engine::init()
 	generateModels();
 
 	lsys = new LSystem();
-	lsys->setIterations(6);
+	lsys->setIterations(4);
 	lsys->setAngle(25.7f);
 	lsys->setSegmentLength(1.f);
 	lsys->setStart('F');
+	lsys->addRule('F', "FF-[vF^F^F]+[^FvFvF]<[^F^FvF]");
 	//lsys->addStochasticRules('F',
 	//{
-	//	std::make_pair(0.5f, std::string("F-F++F-F")),
-	//	std::make_pair(0.5f, std::string("F--F+F"))
-	//	
+	//	std::make_pair(1.f / 6.f, std::string("F-F++F-F")),
+	//	std::make_pair(1.f / 6.f, std::string("F--F+F")),
+	//	std::make_pair(1.f / 6.f, std::string("FvF^^FvF")),
+	//	std::make_pair(1.f / 6.f, std::string("FvvF^F")),
+	//	std::make_pair(1.f / 6.f, std::string("F<F>>F<F")),
+	//	std::make_pair(1.f / 6.f, std::string("F<<F>F")),
 	//});
-	lsys->addStochasticRules('F',
-	{
-		std::make_pair(0.33f, std::string("F[+F]F[-F]F")), 
-		std::make_pair(0.33f, std::string("F[+F]F")),
-		std::make_pair(0.34f, std::string("F[-F]F")),
-	});
 	//lsys->addStochasticRules('F',
 	//{
-	//	std::make_pair(0.25f, std::string("F[+F][-F]")), 
-	//	std::make_pair(0.25f, std::string("F[vF][^F]")),
-	//	std::make_pair(0.25f, std::string("F[<F][>F]")),
-	//	std::make_pair(0.25f, std::string("FF")) 
+	//	std::make_pair(1.f / 3.f, std::string("F[+F][-F]")),
+	//	std::make_pair(1.f / 3.f, std::string("F[^F][vF]")),
+	//	std::make_pair(1.f / 3.f, std::string("F[<F][>F]")),
 	//});
 	//lsys->addRule('F', "F[+F][-F]");
-	//lsys->addRule('F', "FF-[vF^F^F]+[^FvFvF]<[^F^FvF]");
 	//lsys->addRule('X', "-YF+XFX+FY-");
 	//lsys->addRule('Y', "+XF-YFY-FX+");
 	//std::cout << lsys->run() << std::endl;

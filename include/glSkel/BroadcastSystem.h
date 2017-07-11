@@ -14,6 +14,7 @@ namespace BroadcastSystem
 		MOUSE_SCROLL,
 		KEY_PRESS,
 		KEY_UNPRESS,
+		KEY_REPEAT,
 		SHRINK_RAY,
 		GROW_RAY
 	};
