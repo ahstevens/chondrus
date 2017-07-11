@@ -9,10 +9,6 @@
 
 #include <random>
 
-struct Vertex {
-	glm::vec3 pos;
-	glm::vec4 col;
-};
 
 LSystem::LSystem()
 	: m_nIters(0)
@@ -139,24 +135,19 @@ void LSystem::draw()
 		GLushort currInd = 0;
 
 		for (auto const& c : run())
-		{
-			Vertex v;
-			
+		{			
 			switch (c)
 			{
 			case 'F':
 			{
 				glm::vec3 headingVec = glm::rotate(turtleHeading, glm::vec3(1.f, 0.f, 0.f));
-				v.col = glm::vec4((headingVec + 1.f) * 0.5f, 1.f);
 
-				v.pos = turtlePos;
-				m_vvec3Points.push_back(v.pos);
-				m_vvec4Colors.push_back(v.col);
+				m_vvec3Points.push_back(turtlePos);
+				m_vvec4Colors.push_back(glm::vec4((headingVec + 1.f) * 0.5f, 1.f));
 				m_vusInds.push_back(currInd++);
-
-				v.pos = turtlePos + headingVec * m_fSegLen;
-				m_vvec3Points.push_back(v.pos);
-				m_vvec4Colors.push_back(v.col);
+				
+				m_vvec3Points.push_back(turtlePos + headingVec * m_fSegLen);
+				m_vvec4Colors.push_back(glm::vec4((headingVec + 1.f) * 0.5f, 1.f));
 				m_vusInds.push_back(currInd++);
 
 				turtlePos += headingVec * m_fSegLen;
@@ -166,19 +157,17 @@ void LSystem::draw()
 			case 'B':
 			{
 				glm::vec3 headingVec = glm::rotate(turtleHeading, glm::vec3(1.f, 0.f, 0.f));
-				v.col = glm::vec4((headingVec + 1.f) * 0.5f, 1.f);
 
-				v.pos = turtlePos;
-				m_vvec3Points.push_back(v.pos);
-				m_vvec4Colors.push_back(v.col);
+				m_vvec3Points.push_back(turtlePos);
+				m_vvec4Colors.push_back(glm::vec4((headingVec + 1.f) * 0.5f, 1.f));
 				m_vusInds.push_back(currInd++);
 
-				v.pos = turtlePos - headingVec * m_fSegLen;
-				m_vvec3Points.push_back(v.pos);
-				m_vvec4Colors.push_back(v.col);
+				m_vvec3Points.push_back(turtlePos - headingVec * m_fSegLen);
+				m_vvec4Colors.push_back(glm::vec4((headingVec + 1.f) * 0.5f, 1.f));
 				m_vusInds.push_back(currInd++);
 
 				turtlePos -= headingVec * m_fSegLen;
+
 				break;
 			}
 			case '+':
