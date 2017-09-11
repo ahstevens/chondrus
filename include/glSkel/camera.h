@@ -137,7 +137,7 @@ public:
 		{
 			float offset[2];
 			memcpy(offset, data, sizeof(offset)); // recover array
-			look(offset[0], offset[1]);
+			//look(offset[0], offset[1]);
 		}
 
 		if (event == BroadcastSystem::EVENT::MOUSE_SCROLL)

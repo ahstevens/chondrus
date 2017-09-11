@@ -134,6 +134,14 @@ void LSystem::draw()
 		m_vusInds.clear();
 		GLushort currInd = 0;
 
+		for (auto &n : m_Scaffold.vNodes)
+			delete n;
+		m_Scaffold.vNodes.clear();
+
+		for (auto &s : m_Scaffold.vSegments)
+			delete s;
+		m_Scaffold.vSegments.clear();
+
 		for (auto const& c : run())
 		{			
 			switch (c)
