@@ -135,6 +135,7 @@ xcopy /y "$(ProjectDir)..\GLSLpreamble.h" "$(OutputPath)"</Command>
     <ClCompile Include="..\..\include\glSkel\mesh.cpp" />
     <ClCompile Include="..\..\include\glSkel\Renderer.cpp" />
     <ClCompile Include="..\..\include\glSkel\shaderset.cpp" />
+    <ClCompile Include="..\Arcball.cpp" />
     <ClCompile Include="..\Engine.cpp" />
     <ClCompile Include="..\GLFWInputBroadcaster.cpp" />
     <ClCompile Include="..\LSystem.cpp" />
@@ -155,6 +156,7 @@ xcopy /y "$(ProjectDir)..\GLSLpreamble.h" "$(OutputPath)"</Command>
     <ClInclude Include="..\..\include\glSkel\Renderer.h" />
     <ClInclude Include="..\..\include\glSkel\shaderset.h" />
     <ClInclude Include="..\..\include\glSkel\TorusMesh.h" />
+    <ClInclude Include="..\Arcball.h" />
     <ClInclude Include="..\Engine.h" />
     <ClInclude Include="..\GLFWInputBroadcaster.h" />
     <ClInclude Include="..\Chondrus.h" />

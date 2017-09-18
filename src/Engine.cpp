@@ -54,6 +54,7 @@ Engine::Engine()
 	: m_pWindow(NULL)
 	, m_pLightingSystem(NULL)
 	, m_pCamera(NULL)
+	, m_Arcball(Arcball(false))
 	, m_bRunPhysics(false)
 	, m_fDeltaTime(0.f)
 	, m_fLastTime(0.f)
@@ -109,6 +110,20 @@ void Engine::receiveEvent(Object * obj, const int event, void * data)
 		}
 	}
 
+	if (event == BroadcastSystem::EVENT::MOUSE_CLICK)
+	{
+		int button;
+		memcpy(&button, data, sizeof(button));
+
+		if (button == GLFW_MOUSE_BUTTON_LEFT)
+		{
+			double xpos, ypos;
+			glfwGetCursorPos(m_pWindow, &xpos, &ypos);
+
+			m_Arcball.start(xpos, ypos);
+		}
+	}
+
 	if (event == BroadcastSystem::EVENT::MOUSE_UNCLICK)
 	{
 		int button;
@@ -128,6 +143,17 @@ void Engine::receiveEvent(Object * obj, const int event, void * data)
 			}
 		}
 	}
+
+	if (event == BroadcastSystem::EVENT::MOUSE_MOVE)
+	{
+		float offsets[2];
+		memcpy(&offsets, data, sizeof(float) * 2);
+
+		double xpos, ypos;
+		glfwGetCursorPos(m_pWindow, &xpos, &ypos);
+
+		m_Arcball.move(xpos, ypos);
+	}
 }
 
 bool Engine::init()
@@ -146,34 +172,41 @@ bool Engine::init()
 	generateModels();
 
 	lsys = new LSystem();
-	lsys->setIterations(4);
-	lsys->setAngle(25.7f);
+	lsys->setIterations(3);
+	lsys->setAngle(21.7f);
 	lsys->setSegmentLength(1.f);
 	lsys->setStart('F');
+
 	//lsys->addRule('F', "FF-[vF^F^F]+[^FvFvF]<[^F^FvF]");
-	lsys->addStochasticRules('F',
-	{
-		std::make_pair(1.f / 6.f, std::string("F-F++F-F")),
-		std::make_pair(1.f / 6.f, std::string("F--F+F")),
-		std::make_pair(1.f / 6.f, std::string("FvF^^FvF")),
-		std::make_pair(1.f / 6.f, std::string("FvvF^F")),
-		std::make_pair(1.f / 6.f, std::string("F<F>>F<F")),
-		std::make_pair(1.f / 6.f, std::string("F<<F>F")),
-	});
+
+	//lsys->addStochasticRules('F',
+	//{
+	//	std::make_pair(1.f / 6.f, std::string("F-F++F-F")),
+	//	std::make_pair(1.f / 6.f, std::string("F--F+F")),
+	//	std::make_pair(1.f / 6.f, std::string("FvF^^FvF")),
+	//	std::make_pair(1.f / 6.f, std::string("FvvF^F")),
+	//	std::make_pair(1.f / 6.f, std::string("F<F>>F<F")),
+	//	std::make_pair(1.f / 6.f, std::string("F<<F>F")),
+	//});
+
 	//lsys->addStochasticRules('F',
 	//{
 	//	std::make_pair(1.f / 3.f, std::string("F[+F][-F]")),
 	//	std::make_pair(1.f / 3.f, std::string("F[^F][vF]")),
 	//	std::make_pair(1.f / 3.f, std::string("F[<F][>F]")),
 	//});
+
 	//lsys->addStochasticRules('F',
 	//{
 	//	std::make_pair(0.5f, std::string("F[-F][+F]F")),
 	//	std::make_pair(0.5f, std::string("FF"))
 	//});
-	//lsys->addRule('F', "F[+F][-F]");
+
+	lsys->addRule('F', "F[+F][-F]");
+
 	//lsys->addRule('X', "-YF+XFX+FY-");
 	//lsys->addRule('Y', "+XF-YFY-FX+");
+
 	//std::cout << lsys->run() << std::endl;
 
 	return true;
@@ -194,13 +227,6 @@ void Engine::mainLoop()
 		GLFWInputBroadcaster::getInstance().poll();
 
 		update(m_fStepSize);
-
-		//for (auto &c : chonds)
-		//	c->Draw();
-
-		//DebugDrawer::getInstance().drawLine(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 33.f, 0.f));
-		//DebugDrawer::getInstance().drawLine(glm::vec3(0.f, 33.f, 0.f), glm::vec3(20.f, 50.f, 0.f));
-		//DebugDrawer::getInstance().drawLine(glm::vec3(0.f, 33.f, 0.f), glm::vec3(-20.f, 50.f, 0.f));
 
 		lsys->draw();
 
@@ -259,7 +285,7 @@ GLFWwindow * Engine::init_gl_context(std::string winName)
 	glfwMakeContextCurrent(mWindow);
 
 	// GLFW Options
-	glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
 	glewExperimental = GL_TRUE;
@@ -298,6 +324,13 @@ void Engine::init_camera()
 {
 	m_pCamera = new Camera(glm::vec3(0.f, 35.f, 50.f), m_vec3DefaultUp, m_iWidth, m_iHeight);
 	GLFWInputBroadcaster::getInstance().attach(m_pCamera);
+
+	glm::vec4 vp(0.f, 0.f, static_cast<float>(m_iWidth), static_cast<float>(m_iHeight));
+	m_Arcball.setViewport(vp);
+
+	//m_Arcball.setProjectionMatrix(m_sviDesktop3DViewInfo.projection * m_sviDesktop3DViewInfo.view);
+	//
+	//m_Arcball.setZoom(m_fBallRadius, m_vec3BallEye, m_vec3BallUp);
 }
 
 void Engine::generateModels()

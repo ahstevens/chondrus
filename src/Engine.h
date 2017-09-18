@@ -7,6 +7,7 @@
 
 #include "GLSLpreamble.h"
 #include "GLFWInputBroadcaster.h"
+#include "Arcball.h"
 #include "Chondrus.h"
 
 #define MS_PER_UPDATE 0.0333333333f
@@ -68,6 +69,8 @@ public:
 	void update(float dt);
 
 private:
+	Arcball m_Arcball;
+
 	bool m_bRunPhysics;
 
 	GLFWwindow* init_gl_context(std::string winName);

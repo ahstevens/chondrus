@@ -36,6 +36,7 @@ private:
 
 	void generateLines();
 	void generateQuads();
+	void generateMesh(uint16_t numSubsegments);
 
 private:
 	struct Scaffold {
@@ -58,10 +59,13 @@ private:
 
 		struct Node {
 			std::vector<Segment*> vSegments;
+			Node* parentNode;
+			std::vector<Node*> vChildren;
 			glm::vec3 vec3Pos;
 			glm::quat qRot;
+			glm::vec3 vec3Scale; // x = width; y = length; z = thickness
 
-			Node(glm::vec3 pos, glm::quat rot) : vec3Pos(pos), qRot(rot) {}
+			Node(glm::vec3 pos, glm::quat rot, glm::vec3 scale) : vec3Pos(pos), qRot(rot), vec3Scale(scale) {}
 		};
 
 		std::vector<Node*> vNodes;
