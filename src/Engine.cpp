@@ -151,21 +151,26 @@ bool Engine::init()
 	lsys->setSegmentLength(1.f);
 	lsys->setStart('F');
 	//lsys->addRule('F', "FF-[vF^F^F]+[^FvFvF]<[^F^FvF]");
-	//lsys->addStochasticRules('F',
-	//{
-	//	std::make_pair(1.f / 6.f, std::string("F-F++F-F")),
-	//	std::make_pair(1.f / 6.f, std::string("F--F+F")),
-	//	std::make_pair(1.f / 6.f, std::string("FvF^^FvF")),
-	//	std::make_pair(1.f / 6.f, std::string("FvvF^F")),
-	//	std::make_pair(1.f / 6.f, std::string("F<F>>F<F")),
-	//	std::make_pair(1.f / 6.f, std::string("F<<F>F")),
-	//});
 	lsys->addStochasticRules('F',
 	{
-		std::make_pair(1.f / 3.f, std::string("F[+F][-F]")),
-		std::make_pair(1.f / 3.f, std::string("F[^F][vF]")),
-		std::make_pair(1.f / 3.f, std::string("F[<F][>F]")),
+		std::make_pair(1.f / 6.f, std::string("F-F++F-F")),
+		std::make_pair(1.f / 6.f, std::string("F--F+F")),
+		std::make_pair(1.f / 6.f, std::string("FvF^^FvF")),
+		std::make_pair(1.f / 6.f, std::string("FvvF^F")),
+		std::make_pair(1.f / 6.f, std::string("F<F>>F<F")),
+		std::make_pair(1.f / 6.f, std::string("F<<F>F")),
 	});
+	//lsys->addStochasticRules('F',
+	//{
+	//	std::make_pair(1.f / 3.f, std::string("F[+F][-F]")),
+	//	std::make_pair(1.f / 3.f, std::string("F[^F][vF]")),
+	//	std::make_pair(1.f / 3.f, std::string("F[<F][>F]")),
+	//});
+	//lsys->addStochasticRules('F',
+	//{
+	//	std::make_pair(0.5f, std::string("F[-F][+F]F")),
+	//	std::make_pair(0.5f, std::string("FF"))
+	//});
 	//lsys->addRule('F', "F[+F][-F]");
 	//lsys->addRule('X', "-YF+XFX+FY-");
 	//lsys->addRule('Y', "+XF-YFY-FX+");

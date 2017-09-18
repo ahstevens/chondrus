@@ -196,7 +196,8 @@ void LSystem::draw()
 		m_vvec4Colors.clear();
 		m_vusInds.clear();
 
-		generateLines();
+		//generateLines();
+		generateQuads();
 
 		glBindBuffer(GL_ARRAY_BUFFER, this->m_glVBO);
 		// Buffer orphaning
@@ -216,7 +217,7 @@ void LSystem::draw()
 	}
 
 	Renderer::RendererSubmission rs;
-	rs.primitiveType = GL_LINES;
+	rs.primitiveType = GL_TRIANGLES;
 	rs.shaderName = "flat";
 	rs.VAO = m_glVAO;
 	rs.vertCount = m_vusInds.size();
@@ -269,7 +270,9 @@ void LSystem::generateLines()
 	for (auto const& seg : m_Scaffold.vSegments)
 	{
 		glm::vec3 originHeading(glm::rotate(seg->origin->qRot, glm::vec3(0.f, 1.f, 0.f)));
-		glm::vec3 terminusHeading(glm::rotate(seg->terminus->qRot, glm::vec3(0.f, 1.f, 0.f)));
+
+		glm::mat3 tRot = glm::mat3_cast(seg->terminus->qRot);
+		glm::vec3 terminusHeading(tRot[1]);
 
 		m_vvec3Points.push_back(seg->origin->vec3Pos);
 		m_vvec4Colors.push_back(glm::vec4((originHeading + 1.f) * 0.5f, 1.f));
@@ -283,4 +286,35 @@ void LSystem::generateLines()
 
 void LSystem::generateQuads()
 {
+	GLushort currInd = 0;
+	for (auto const& seg : m_Scaffold.vSegments)
+	{
+		glm::vec3 originHeading(glm::rotate(seg->origin->qRot, glm::vec3(0.f, 1.f, 0.f)));
+		glm::vec3 terminusHeading(glm::rotate(seg->terminus->qRot, glm::vec3(0.f, 1.f, 0.f)));
+
+		glm::mat3 tRot = glm::mat3_cast(seg->terminus->qRot);
+
+		glm::vec3 localRight = glm::normalize(tRot[0]) * (m_fSegLen / 10.f);
+		glm::vec3 localLeft = -localRight;
+
+		m_vvec3Points.push_back(seg->origin->vec3Pos + localLeft);
+		m_vvec3Points.push_back(seg->origin->vec3Pos + localRight);
+		m_vvec4Colors.push_back(glm::vec4((originHeading + 1.f) * 0.5f, 1.f));
+		m_vvec4Colors.push_back(glm::vec4((originHeading + 1.f) * 0.5f, 1.f));
+
+		m_vvec3Points.push_back(seg->terminus->vec3Pos + localLeft);
+		m_vvec3Points.push_back(seg->terminus->vec3Pos + localRight);
+		m_vvec4Colors.push_back(glm::vec4((terminusHeading + 1.f) * 0.5f, 1.f));
+		m_vvec4Colors.push_back(glm::vec4((terminusHeading + 1.f) * 0.5f, 1.f));
+
+		m_vusInds.push_back(currInd + 0u);
+		m_vusInds.push_back(currInd + 1u);
+		m_vusInds.push_back(currInd + 2u);
+
+		m_vusInds.push_back(currInd + 1u);
+		m_vusInds.push_back(currInd + 3u);
+		m_vusInds.push_back(currInd + 2u);
+
+		currInd += 4;
+	}
 }
