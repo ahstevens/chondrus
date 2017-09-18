@@ -34,6 +34,9 @@ private:
 	std::string process(std::string oldstr);
 	std::string applyRules(char symbol);
 
+	void generateLines();
+	void generateQuads();
+
 private:
 	struct Scaffold {
 		struct Node;
@@ -47,7 +50,7 @@ private:
 			{
 				calcLenSq();
 			}
-			void calcLenSq() { fLengthSq = glm::length2(terminus->mat4CoordFrame[3] - origin->mat4CoordFrame[3]); }
+			void calcLenSq() { fLengthSq = glm::length2(terminus->vec3Pos - origin->vec3Pos); }
 
 		private:
 			float fLengthSq;
@@ -55,7 +58,10 @@ private:
 
 		struct Node {
 			std::vector<Segment*> vSegments;
-			glm::mat4 mat4CoordFrame;
+			glm::vec3 vec3Pos;
+			glm::quat qRot;
+
+			Node(glm::vec3 pos, glm::quat rot) : vec3Pos(pos), qRot(rot) {}
 		};
 
 		std::vector<Node*> vNodes;

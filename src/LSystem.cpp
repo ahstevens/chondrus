@@ -115,6 +115,72 @@ std::string LSystem::run()
 	}
 
 	m_strResult = endStr;
+
+	glm::vec3 turtlePos(0.f);
+	glm::quat turtleHeading;
+
+	std::vector<Scaffold::Node*> turtleStack;
+
+	for (auto &n : m_Scaffold.vNodes)
+		delete n;
+	m_Scaffold.vNodes.clear();
+
+	for (auto &s : m_Scaffold.vSegments)
+		delete s;
+	m_Scaffold.vSegments.clear();
+
+	Scaffold::Node *prevNode = new Scaffold::Node(turtlePos, turtleHeading);
+	m_Scaffold.vNodes.push_back(prevNode);
+
+	for (auto const& c : m_strResult)
+	{
+		switch (c)
+		{
+		case 'F':
+		{
+			glm::vec3 headingVec = glm::rotate(turtleHeading, glm::vec3(0.f, 1.f, 0.f));
+
+			turtlePos += headingVec * m_fSegLen;
+
+			Scaffold::Node *node = new Scaffold::Node(turtlePos, turtleHeading);
+			m_Scaffold.vSegments.push_back(new Scaffold::Segment(prevNode, node));
+			m_Scaffold.vNodes.push_back(node);
+			prevNode = node;
+
+			break;
+		}
+		case '+':
+			turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 0.f, 1.f));
+			break;
+		case '-':
+			turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 0.f, 1.f));
+			break;
+		case '^':
+			turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+			break;
+		case 'v':
+			turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+			break;
+		case '<':
+			turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+			break;
+		case '>':
+			turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+			break;
+		case '[':
+			turtleStack.push_back(prevNode);
+			break;
+		case ']':
+			prevNode = turtleStack.back();
+			turtlePos = prevNode->vec3Pos;
+			turtleHeading = prevNode->qRot;
+			turtleStack.pop_back();
+			break;
+		default:
+			std::cerr << "Error: Symbol '" << c << "' not found in turtle commands." << std::endl;
+		}
+	}
+
 	m_bNeedsRefresh = false;
 
 	return m_strResult;
@@ -124,90 +190,13 @@ void LSystem::draw()
 {
 	if (m_bNeedsRefresh)
 	{
-		glm::vec3 turtlePos(0.f);
-		glm::quat turtleHeading;
-
-		std::vector<std::pair<glm::vec3, glm::quat>> turtleStack;
+		run();
 
 		m_vvec3Points.clear();
 		m_vvec4Colors.clear();
 		m_vusInds.clear();
-		GLushort currInd = 0;
 
-		for (auto &n : m_Scaffold.vNodes)
-			delete n;
-		m_Scaffold.vNodes.clear();
-
-		for (auto &s : m_Scaffold.vSegments)
-			delete s;
-		m_Scaffold.vSegments.clear();
-
-		for (auto const& c : run())
-		{			
-			switch (c)
-			{
-			case 'F':
-			{
-				glm::vec3 headingVec = glm::rotate(turtleHeading, glm::vec3(1.f, 0.f, 0.f));
-
-				m_vvec3Points.push_back(turtlePos);
-				m_vvec4Colors.push_back(glm::vec4((headingVec + 1.f) * 0.5f, 1.f));
-				m_vusInds.push_back(currInd++);
-				
-				m_vvec3Points.push_back(turtlePos + headingVec * m_fSegLen);
-				m_vvec4Colors.push_back(glm::vec4((headingVec + 1.f) * 0.5f, 1.f));
-				m_vusInds.push_back(currInd++);
-
-				turtlePos += headingVec * m_fSegLen;
-
-				break;
-			}
-			case 'B':
-			{
-				glm::vec3 headingVec = glm::rotate(turtleHeading, glm::vec3(1.f, 0.f, 0.f));
-
-				m_vvec3Points.push_back(turtlePos);
-				m_vvec4Colors.push_back(glm::vec4((headingVec + 1.f) * 0.5f, 1.f));
-				m_vusInds.push_back(currInd++);
-
-				m_vvec3Points.push_back(turtlePos - headingVec * m_fSegLen);
-				m_vvec4Colors.push_back(glm::vec4((headingVec + 1.f) * 0.5f, 1.f));
-				m_vusInds.push_back(currInd++);
-
-				turtlePos -= headingVec * m_fSegLen;
-
-				break;
-			}
-			case '+':
-				turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 0.f, 1.f));
-				break;
-			case '-':
-				turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 0.f, 1.f));
-				break;
-			case '^':
-				turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 1.f, 0.f));
-				break;
-			case 'v':
-				turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 1.f, 0.f));
-				break;
-			case '<':
-				turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(1.f, 0.f, 0.f));
-				break;
-			case '>':
-				turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(1.f, 0.f, 0.f));
-				break;
-			case '[':
-				turtleStack.push_back(std::make_pair(turtlePos, turtleHeading));
-				break;
-			case ']':
-				turtlePos = turtleStack.back().first;
-				turtleHeading = turtleStack.back().second;
-				turtleStack.pop_back();
-				break;
-			default:
-				std::cerr << "Error: Symbol '" << c << "' not found in turtle commands." << std::endl;
-			}
-		}
+		generateLines();
 
 		glBindBuffer(GL_ARRAY_BUFFER, this->m_glVBO);
 		// Buffer orphaning
@@ -231,7 +220,7 @@ void LSystem::draw()
 	rs.shaderName = "flat";
 	rs.VAO = m_glVAO;
 	rs.vertCount = m_vusInds.size();
-	rs.modelToWorldTransform = glm::mat4(m_mat3Rotation) * glm::mat4_cast(glm::rotate(glm::quat(), glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f)));
+	rs.modelToWorldTransform = glm::mat4(m_mat3Rotation);
 
 	Renderer::getInstance().addToDynamicRenderQueue(rs);
 }
@@ -272,4 +261,26 @@ std::string LSystem::applyRules(char symbol)
 	{
 		return std::string(1, symbol);
 	}
+}
+
+void LSystem::generateLines()
+{
+	GLushort currInd = 0;
+	for (auto const& seg : m_Scaffold.vSegments)
+	{
+		glm::vec3 originHeading(glm::rotate(seg->origin->qRot, glm::vec3(0.f, 1.f, 0.f)));
+		glm::vec3 terminusHeading(glm::rotate(seg->terminus->qRot, glm::vec3(0.f, 1.f, 0.f)));
+
+		m_vvec3Points.push_back(seg->origin->vec3Pos);
+		m_vvec4Colors.push_back(glm::vec4((originHeading + 1.f) * 0.5f, 1.f));
+		m_vusInds.push_back(currInd++);
+
+		m_vvec3Points.push_back(seg->terminus->vec3Pos);
+		m_vvec4Colors.push_back(glm::vec4((terminusHeading + 1.f) * 0.5f, 1.f));
+		m_vusInds.push_back(currInd++);
+	}
+}
+
+void LSystem::generateQuads()
+{
 }
