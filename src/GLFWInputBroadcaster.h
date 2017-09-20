@@ -13,6 +13,7 @@ public:
 
 	void init(GLFWwindow* window);
 
+	bool mouseButtonPressed(const int glfwMouseButtonCode);
 	bool keyPressed(const int glfwKeyCode);
 
 	void poll();
@@ -27,6 +28,8 @@ private:
 
 	bool keys[1024];
 	bool firstMouse;
+	bool leftMouseDown;
+	bool rightMouseDown;
 	float lastX, lastY;
 
 	GLFWInputBroadcaster(GLFWInputBroadcaster const&) = delete; // no copies of singletons (C++11)

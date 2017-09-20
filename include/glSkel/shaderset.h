@@ -1,6 +1,7 @@
 #pragma once
 
 // Replace with your own GL header include
+#define GLEW_STATIC
 #include <GL\glew.h>
 
 #include <vector>

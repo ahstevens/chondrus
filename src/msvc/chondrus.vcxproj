@@ -131,8 +131,8 @@ xcopy /y "$(ProjectDir)..\GLSLpreamble.h" "$(OutputPath)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\include\glSkel\Dataset.cpp" />
     <ClCompile Include="..\..\include\glSkel\LightingSystem.cpp" />
-    <ClCompile Include="..\..\include\glSkel\mesh.cpp" />
     <ClCompile Include="..\..\include\glSkel\Renderer.cpp" />
     <ClCompile Include="..\..\include\glSkel\shaderset.cpp" />
     <ClCompile Include="..\Arcball.cpp" />
@@ -140,26 +140,21 @@ xcopy /y "$(ProjectDir)..\GLSLpreamble.h" "$(OutputPath)"</Command>
     <ClCompile Include="..\GLFWInputBroadcaster.cpp" />
     <ClCompile Include="..\LSystem.cpp" />
     <ClCompile Include="..\main.cpp" />
-    <ClCompile Include="..\Chondrus.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\glSkel\BroadcastSystem.h" />
     <ClInclude Include="..\..\include\glSkel\BulletDebugDrawer.h" />
     <ClInclude Include="..\..\include\glSkel\camera.h" />
+    <ClInclude Include="..\..\include\glSkel\Dataset.h" />
     <ClInclude Include="..\..\include\glSkel\DebugDrawer.h" />
-    <ClInclude Include="..\..\include\glSkel\Gabor.h" />
-    <ClInclude Include="..\..\include\glSkel\GeometryStrip.h" />
     <ClInclude Include="..\..\include\glSkel\GLSLpreamble.h" />
     <ClInclude Include="..\..\include\glSkel\LightingSystem.h" />
-    <ClInclude Include="..\..\include\glSkel\mesh.h" />
     <ClInclude Include="..\..\include\glSkel\Object.h" />
     <ClInclude Include="..\..\include\glSkel\Renderer.h" />
     <ClInclude Include="..\..\include\glSkel\shaderset.h" />
-    <ClInclude Include="..\..\include\glSkel\TorusMesh.h" />
     <ClInclude Include="..\Arcball.h" />
     <ClInclude Include="..\Engine.h" />
     <ClInclude Include="..\GLFWInputBroadcaster.h" />
-    <ClInclude Include="..\Chondrus.h" />
     <ClInclude Include="..\LSystem.h" />
   </ItemGroup>
   <ItemGroup>

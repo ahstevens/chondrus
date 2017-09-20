@@ -8,7 +8,6 @@
 #include "GLSLpreamble.h"
 #include "GLFWInputBroadcaster.h"
 #include "Arcball.h"
-#include "Chondrus.h"
 
 #define MS_PER_UPDATE 0.0333333333f
 #define CAST_RAY_LEN 1000.f
@@ -30,8 +29,6 @@ public:
 	float m_fLastTime; // Time of last frame
 
 	Camera  *m_pCamera;
-
-	std::vector<Chondrus*> chonds;
 
 	struct RendererSubmission
 	{
@@ -68,8 +65,12 @@ public:
 
 	void update(float dt);
 
+	void draw();
+
+	void render();
+
 private:
-	Arcball m_Arcball;
+	ArcBall *m_pArcball;
 
 	bool m_bRunPhysics;
 
@@ -79,6 +80,4 @@ private:
 	void init_lighting();
 
 	void init_camera();
-
-	void generateModels();
 };

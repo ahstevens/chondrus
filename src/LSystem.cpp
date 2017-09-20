@@ -11,7 +11,8 @@
 
 
 LSystem::LSystem()
-	: m_nIters(0)
+	: Dataset("Chondrus crispus")
+	, m_nIters(0)
 	, m_bNeedsRefresh(true)
 	, m_mtEngine(std::random_device()())
 	, m_UniformDist(0.f, 1.f)
@@ -100,6 +101,21 @@ bool LSystem::addStochasticRules(char symbol, std::vector<std::pair<float, std::
 	return true;
 }
 
+void LSystem::update()
+{
+	run();
+
+	reset();
+
+	//generateLines();
+	//generateQuads();
+	generateMesh(10);
+
+	refreshGL();
+
+	m_bNeedsRefresh = false;
+}
+
 std::string LSystem::run()
 {
 	if (!m_bNeedsRefresh)
@@ -143,6 +159,8 @@ std::string LSystem::run()
 
 			turtlePos += headingVec * m_fSegLen;
 
+			checkNewRawPosition(turtlePos);
+
 			Scaffold::Node *node = new Scaffold::Node(turtlePos, turtleHeading, turtleScale);
 			node->parentNode = prevNode;
 			prevNode->vChildren.push_back(node);
@@ -163,16 +181,16 @@ std::string LSystem::run()
 		case '-':
 			turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 0.f, 1.f));
 			break;
-		case '^':
+		case '<':
 			turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 1.f, 0.f));
 			break;
-		case 'v':
+		case '>':
 			turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 1.f, 0.f));
 			break;
-		case '<':
+		case '^':
 			turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(1.f, 0.f, 0.f));
 			break;
-		case '>':
+		case 'v':
 			turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(1.f, 0.f, 0.f));
 			break;
 		case '[':
@@ -189,50 +207,27 @@ std::string LSystem::run()
 		}
 	}
 
-	m_bNeedsRefresh = false;
-
 	return m_strResult;
 }
 
-void LSystem::draw()
+GLuint LSystem::getVAO()
 {
 	if (m_bNeedsRefresh)
 	{
-		run();
-
-		m_vvec3Points.clear();
-		m_vvec4Colors.clear();
-		m_vusInds.clear();
-
-		//generateLines();
-		//generateQuads();
-		generateMesh(10);
-
-		glBindBuffer(GL_ARRAY_BUFFER, this->m_glVBO);
-		// Buffer orphaning
-		glBufferData(GL_ARRAY_BUFFER, m_vvec3Points.size() * sizeof(glm::vec3) + m_vvec4Colors.size() * sizeof(glm::vec4), 0, GL_STREAM_DRAW);
-		// Sub buffer data for points, then colors
-		glBufferSubData(GL_ARRAY_BUFFER, 0, m_vvec3Points.size() * sizeof(glm::vec3), &m_vvec3Points[0]);
-		glBufferSubData(GL_ARRAY_BUFFER, m_vvec3Points.size() * sizeof(glm::vec3), m_vvec4Colors.size() * sizeof(glm::vec4), &m_vvec4Colors[0]);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->m_glEBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_vusInds.size() * sizeof(GLushort), 0, GL_STREAM_DRAW);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_vusInds.size() * sizeof(GLushort), &m_vusInds[0], GL_STREAM_DRAW);
-
-		// Set color sttribute pointer now that point array size is known
-		glBindVertexArray(this->m_glVAO);
-			glVertexAttribPointer(COLOR_ATTRIB_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (GLvoid*)(m_vvec3Points.size() * sizeof(glm::vec3)));
-		glBindVertexArray(0);
+		update();
 	}
 
-	Renderer::RendererSubmission rs;
-	rs.primitiveType = GL_TRIANGLES;
-	rs.shaderName = "flat";
-	rs.VAO = m_glVAO;
-	rs.vertCount = m_vusInds.size();
-	rs.modelToWorldTransform = glm::mat4(m_mat3Rotation);
+	return m_glVAO;
+}
 
-	Renderer::getInstance().addToDynamicRenderQueue(rs);
+GLushort LSystem::getIndexCount()
+{
+	if (m_bNeedsRefresh)
+	{
+		update();
+	}
+
+	return m_vusInds.size();
 }
 
 std::string LSystem::process(std::string oldstr)
@@ -271,6 +266,32 @@ std::string LSystem::applyRules(char symbol)
 	{
 		return std::string(1, symbol);
 	}
+}
+
+void LSystem::reset()
+{
+	m_vvec3Points.clear();
+	m_vvec4Colors.clear();
+	m_vusInds.clear();
+}
+
+void LSystem::refreshGL()
+{
+	glBindBuffer(GL_ARRAY_BUFFER, this->m_glVBO);
+	// Buffer orphaning
+	glBufferData(GL_ARRAY_BUFFER, m_vvec3Points.size() * sizeof(glm::vec3) + m_vvec4Colors.size() * sizeof(glm::vec4), 0, GL_STREAM_DRAW);
+	// Sub buffer data for points, then colors
+	glBufferSubData(GL_ARRAY_BUFFER, 0, m_vvec3Points.size() * sizeof(glm::vec3), &m_vvec3Points[0]);
+	glBufferSubData(GL_ARRAY_BUFFER, m_vvec3Points.size() * sizeof(glm::vec3), m_vvec4Colors.size() * sizeof(glm::vec4), &m_vvec4Colors[0]);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->m_glEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_vusInds.size() * sizeof(GLushort), 0, GL_STREAM_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_vusInds.size() * sizeof(GLushort), &m_vusInds[0], GL_STREAM_DRAW);
+
+	// Set color sttribute pointer now that point array size is known
+	glBindVertexArray(this->m_glVAO);
+		glVertexAttribPointer(COLOR_ATTRIB_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (GLvoid*)(m_vvec3Points.size() * sizeof(glm::vec3)));
+	glBindVertexArray(0);
 }
 
 void LSystem::generateLines()

@@ -27,12 +27,6 @@
     <ClCompile Include="..\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\include\glSkel\mesh.cpp">
-      <Filter>Includes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Chondrus.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\include\glSkel\shaderset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -51,6 +45,9 @@
     <ClCompile Include="..\Arcball.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\include\glSkel\Dataset.cpp">
+      <Filter>Includes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\GLFWInputBroadcaster.h">
@@ -65,20 +62,8 @@
     <ClInclude Include="..\..\include\glSkel\camera.h">
       <Filter>Includes</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\glSkel\Gabor.h">
-      <Filter>Includes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\glSkel\GeometryStrip.h">
-      <Filter>Includes</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\glSkel\Object.h">
       <Filter>Includes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\glSkel\TorusMesh.h">
-      <Filter>Includes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Chondrus.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\glSkel\DebugDrawer.h">
       <Filter>Includes</Filter>
@@ -95,9 +80,6 @@
     <ClInclude Include="..\..\include\glSkel\Renderer.h">
       <Filter>Includes</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\glSkel\mesh.h">
-      <Filter>Includes</Filter>
-    </ClInclude>
     <ClInclude Include="..\LSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -106,6 +88,9 @@
     </ClInclude>
     <ClInclude Include="..\Arcball.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glSkel\Dataset.h">
+      <Filter>Includes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

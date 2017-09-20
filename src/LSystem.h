@@ -11,8 +11,9 @@
 #include <glm/gtx/norm.hpp>
 
 #include <glSkel/Object.h>
+#include <glSkel/Dataset.h>
 
-class LSystem : public Object
+class LSystem : public Object, public Dataset
 {
 public:	
 	LSystem();
@@ -26,13 +27,20 @@ public:
 	bool addRule(char symbol, std::string replacement);
 	bool addStochasticRules(char symbol, std::vector<std::pair<float, std::string>> replacementRules);
 
+	void update();
+
 	std::string run();
 
-	void draw();
+	GLuint getVAO();
+	GLushort getIndexCount();
 
 private:
 	std::string process(std::string oldstr);
 	std::string applyRules(char symbol);
+
+	void reset();
+
+	void refreshGL();
 
 	void generateLines();
 	void generateQuads();

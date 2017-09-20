@@ -4,6 +4,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <iostream>
+
 LSystem* lsys;
 
 //-----------------------------------------------------------------------------
@@ -54,7 +56,7 @@ Engine::Engine()
 	: m_pWindow(NULL)
 	, m_pLightingSystem(NULL)
 	, m_pCamera(NULL)
-	, m_Arcball(Arcball(false))
+	, m_pArcball(NULL)
 	, m_bRunPhysics(false)
 	, m_fDeltaTime(0.f)
 	, m_fLastTime(0.f)
@@ -63,12 +65,6 @@ Engine::Engine()
 
 Engine::~Engine()
 {
-	if (chonds.size())
-	{
-		for (auto s : chonds)
-			delete s;
-		chonds.clear();
-	}
 }
 
 void Engine::receiveEvent(Object * obj, const int event, void * data)
@@ -120,7 +116,7 @@ void Engine::receiveEvent(Object * obj, const int event, void * data)
 			double xpos, ypos;
 			glfwGetCursorPos(m_pWindow, &xpos, &ypos);
 
-			m_Arcball.start(xpos, ypos);
+			m_pArcball->beginDrag(glm::vec2(xpos, m_iHeight - ypos));
 		}
 	}
 
@@ -128,31 +124,20 @@ void Engine::receiveEvent(Object * obj, const int event, void * data)
 	{
 		int button;
 		memcpy(&button, data, sizeof(button));
-
-		if (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_RIGHT)
-		{
-			glm::vec3 rayFrom = m_pCamera->getPosition();
-			glm::vec3 rayTo = rayFrom + m_pCamera->getOrientation()[2] * CAST_RAY_LEN;
-			glm::vec3 payload[2] = { rayFrom, rayTo };
-
-			BroadcastSystem::EVENT rayType = button == GLFW_MOUSE_BUTTON_LEFT ? BroadcastSystem::EVENT::GROW_RAY : BroadcastSystem::EVENT::SHRINK_RAY;
-
-			for (auto& s : chonds)
-			{
-				s->receiveEvent(m_pCamera, rayType, &payload);
-			}
-		}
 	}
 
 	if (event == BroadcastSystem::EVENT::MOUSE_MOVE)
 	{
-		float offsets[2];
-		memcpy(&offsets, data, sizeof(float) * 2);
+		if (GLFWInputBroadcaster::getInstance().mouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
+		{
+			float offsets[2];
+			memcpy(&offsets, data, sizeof(float) * 2);
 
-		double xpos, ypos;
-		glfwGetCursorPos(m_pWindow, &xpos, &ypos);
+			double xpos, ypos;
+			glfwGetCursorPos(m_pWindow, &xpos, &ypos);
 
-		m_Arcball.move(xpos, ypos);
+			m_pArcball->drag(glm::vec2(xpos, m_iHeight - ypos));
+		}
 	}
 }
 
@@ -169,11 +154,10 @@ bool Engine::init()
 	Renderer::getInstance().init(); // this will init the renderer singleton
 	init_camera();
 	init_lighting();
-	generateModels();
 
 	lsys = new LSystem();
-	lsys->setIterations(3);
-	lsys->setAngle(21.7f);
+	lsys->setIterations(4);
+	lsys->setAngle(30.f);
 	lsys->setSegmentLength(1.f);
 	lsys->setStart('F');
 
@@ -202,7 +186,14 @@ bool Engine::init()
 	//	std::make_pair(0.5f, std::string("FF"))
 	//});
 
-	lsys->addRule('F', "F[+F][-F]");
+	lsys->addRule('F', "F[XFXF]");
+	lsys->addStochasticRules('X',
+	{
+		std::make_pair(0.25f, std::string("+")),
+		std::make_pair(0.25f, std::string("-")),
+		std::make_pair(0.25f, std::string("^")),
+		std::make_pair(0.25f, std::string("v")),
+	});
 
 	//lsys->addRule('X', "-YF+XFX+FY-");
 	//lsys->addRule('Y', "+XF-YFY-FX+");
@@ -218,19 +209,11 @@ void Engine::mainLoop()
 
 	// Main Rendering Loop
 	while (!glfwWindowShouldClose(m_pWindow)) {
-		// Calculate deltatime of current frame
-		float newTime = static_cast<float>(glfwGetTime());
-		m_fDeltaTime = newTime - m_fLastTime;
-		m_fLastTime = newTime;
-
-		// Poll input events first
-		GLFWInputBroadcaster::getInstance().poll();
-
 		update(m_fStepSize);
 
-		lsys->draw();
+		draw();
 
-		Renderer::getInstance().RenderFrame(m_iWidth, m_iHeight);
+		render();
 
 		// Flip buffers and render to screen
 		glfwSwapBuffers(m_pWindow);
@@ -239,6 +222,14 @@ void Engine::mainLoop()
 
 void Engine::update(float dt)
 {
+	// Calculate deltatime of current frame
+	float newTime = static_cast<float>(glfwGetTime());
+	m_fDeltaTime = newTime - m_fLastTime;
+	m_fLastTime = newTime;
+
+	// Poll input events first
+	GLFWInputBroadcaster::getInstance().poll();
+
 	m_pCamera->update(dt);
 
 	// Create camera transformations
@@ -258,10 +249,23 @@ void Engine::update(float dt)
 	glNamedBufferSubData(*Renderer::getInstance().getFrameUBO(), offsetof(FrameUniforms, m4View), sizeof(FrameUniforms::m4View), glm::value_ptr(view));
 	glNamedBufferSubData(*Renderer::getInstance().getFrameUBO(), offsetof(FrameUniforms, m4Projection), sizeof(FrameUniforms::m4Projection), glm::value_ptr(projection));
 	glNamedBufferSubData(*Renderer::getInstance().getFrameUBO(), offsetof(FrameUniforms, m4ViewProjection), sizeof(FrameUniforms::m4ViewProjection), glm::value_ptr(viewProjection));
+}
 
-	// update soft mesh vertices
-	for (auto &c : chonds)
-		c->update();
+void Engine::draw()
+{
+	Renderer::RendererSubmission rs;
+	rs.primitiveType = GL_TRIANGLES;
+	rs.shaderName = "flat";
+	rs.VAO = lsys->getVAO();
+	rs.vertCount = lsys->getIndexCount();
+	rs.modelToWorldTransform = m_pArcball->getTransformation() * glm::mat4(lsys->getOrientation());
+
+	Renderer::getInstance().addToDynamicRenderQueue(rs);
+}
+
+void Engine::render()
+{
+	Renderer::getInstance().RenderFrame(m_iWidth, m_iHeight);
 }
 
 GLFWwindow * Engine::init_gl_context(std::string winName)
@@ -322,45 +326,8 @@ void Engine::init_lighting()
 
 void Engine::init_camera()
 {
-	m_pCamera = new Camera(glm::vec3(0.f, 35.f, 50.f), m_vec3DefaultUp, m_iWidth, m_iHeight);
+	m_pCamera = new Camera(glm::vec3(0.f, 0.f, 25.f), m_vec3DefaultUp, m_iWidth, m_iHeight);
 	GLFWInputBroadcaster::getInstance().attach(m_pCamera);
 
-	glm::vec4 vp(0.f, 0.f, static_cast<float>(m_iWidth), static_cast<float>(m_iHeight));
-	m_Arcball.setViewport(vp);
-
-	//m_Arcball.setProjectionMatrix(m_sviDesktop3DViewInfo.projection * m_sviDesktop3DViewInfo.view);
-	//
-	//m_Arcball.setZoom(m_fBallRadius, m_vec3BallEye, m_vec3BallUp);
-}
-
-void Engine::generateModels()
-{
-	Chondrus *chond;
-	unsigned int nSlats = 1u;
-	float spaceBetween = 7.5f;
-
-	bool isEmpty = chonds.size() == 0;
-
-	if (!isEmpty)
-	{
-		chonds.clear();
-	}
-
-	for (int i = 0u; i < nSlats; ++i)
-	{
-		if (!isEmpty)
-		{
-			GLFWInputBroadcaster::getInstance().detach(chonds[i]);
-			delete chonds[i];
-		}
-
-		glm::vec3 pos;// (-(nSlats * spaceBetween / 2) + i * spaceBetween, 0.f, 0.f);
-		glm::mat3 rot;// (glm::angleAxis(glm::radians(90.f), glm::vec3(0.f, 1.f, 0.f)));
-
-		chond = new Chondrus(100.f, 33.f, 5.f, pos, rot);
-
-		GLFWInputBroadcaster::getInstance().attach(chond);
-
-		chonds.push_back(chond);
-	}
+	m_pArcball = new ArcBall(glm::vec3(glm::vec2(m_iWidth, m_iHeight) / 2.f, 0.f), 0.45f * (std::min)(m_iWidth, m_iHeight));
 }

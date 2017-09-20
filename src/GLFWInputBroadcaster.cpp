@@ -29,6 +29,16 @@ void GLFWInputBroadcaster::init(GLFWwindow * window)
 	lastY = 0;
 }
 
+bool GLFWInputBroadcaster::mouseButtonPressed(const int glfwMouseButtonCode)
+{
+	if (glfwMouseButtonCode == GLFW_MOUSE_BUTTON_LEFT && leftMouseDown)
+		return true;
+	else if (glfwMouseButtonCode == GLFW_MOUSE_BUTTON_RIGHT && rightMouseDown)
+		return true;
+	else
+		return false;
+}
+
 bool GLFWInputBroadcaster::keyPressed(const int glfwKeyCode)
 {
 	return keys[glfwKeyCode];
@@ -71,9 +81,23 @@ void GLFWInputBroadcaster::key_callback(GLFWwindow* window, int key, int scancod
 void GLFWInputBroadcaster::mouse_button_callback(GLFWwindow * window, int button, int action, int mods)
 {
 	if (action == GLFW_PRESS)
+	{
+		if (button == GLFW_MOUSE_BUTTON_LEFT)
+			getInstance().leftMouseDown = true;
+		else if (button == GLFW_MOUSE_BUTTON_RIGHT)
+			getInstance().rightMouseDown = true;
+		
 		getInstance().notify(NULL, BroadcastSystem::EVENT::MOUSE_CLICK, &button);
+	}
 	else if (action == GLFW_RELEASE)
+	{
+		if (button == GLFW_MOUSE_BUTTON_LEFT)
+			getInstance().leftMouseDown = false;
+		else if (button == GLFW_MOUSE_BUTTON_RIGHT)
+			getInstance().rightMouseDown = false;
+
 		getInstance().notify(NULL, BroadcastSystem::EVENT::MOUSE_UNCLICK, &button);
+	}
 }
 
 void GLFWInputBroadcaster::mouse_position_callback(GLFWwindow * window, double xpos, double ypos)
