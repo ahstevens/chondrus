@@ -17,7 +17,7 @@
 class LSystem : public Object, public Dataset
 {
 	typedef std::map<char, std::vector<std::pair<float, std::string>>> RuleMap;
-	typedef std::map<char, std::function<void>> CommandMap;
+	typedef std::map<char, std::function<void()>> CommandMap;
 
 public:	
 	LSystem();
@@ -30,6 +30,8 @@ public:
 	void setRefreshNeeded();
 	bool addRule(char symbol, std::string replacement);
 	bool addStochasticRules(char symbol, std::vector<std::pair<float, std::string>> replacementRules);
+	bool addFinishRule(char symbol, std::string replacement);
+	bool addStochasticFinishRules(char symbol, std::vector<std::pair<float, std::string>> replacementRules);
 
 	void update();
 
@@ -39,6 +41,8 @@ public:
 	GLushort getIndexCount();
 
 private:
+	void makeTurtleCommands();
+
 	std::string iterate(std::string oldstr);
 	std::string finish(std::string oldstr);
 	bool applyRules(char symbol, RuleMap rules, std::string *out);
@@ -53,7 +57,6 @@ private:
 	void generateMesh(uint16_t numSubsegments);
 
 private:
-
 	struct Scaffold {
 		struct Node;
 		struct Segment {
@@ -95,6 +98,14 @@ private:
 	char m_chStartSymbol;
 
 	CommandMap m_mapTurtleCommands;
+
+	glm::vec3 m_vec3TurtlePos;
+	glm::quat m_qTurtleHeading;
+	glm::vec3 m_vec3TurtleScale;
+
+	std::vector<Scaffold::Node*> m_TurtleStack;
+
+	Scaffold::Node* m_pCurrentNode;
 
 	bool m_bNeedsRefresh;
 

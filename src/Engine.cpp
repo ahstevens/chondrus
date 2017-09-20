@@ -159,7 +159,16 @@ bool Engine::init()
 	lsys->setIterations(4);
 	lsys->setAngle(30.f);
 	lsys->setSegmentLength(1.f);
-	lsys->setStart('F');
+	lsys->setStart('X');
+
+	lsys->addRule('X', "Y[+X]-X");
+	lsys->addStochasticRules('Y',
+	{
+		std::make_pair(0.5f, std::string("YY")),
+		std::make_pair(0.5f, std::string("Y"))
+	});
+	lsys->addFinishRule('X', "F");
+	lsys->addFinishRule('Y', "F");
 
 	//lsys->addRule('F', "FF-[vF^F^F]+[^FvFvF]<[^F^FvF]");
 
@@ -185,13 +194,11 @@ bool Engine::init()
 	//	std::make_pair(0.5f, std::string("F[-F][+F]F")),
 	//	std::make_pair(0.5f, std::string("FF"))
 	//});
-
-	lsys->addRule('F', "FX[+F][-F]");
-	lsys->addStochasticRules('X', 
-	{
-		std::make_pair(0.5f, std::string("^")),
-		std::make_pair(0.5f, std::string("v"))
-	});
+	//lsys->addStochasticRules('X', 
+	//{
+	//	std::make_pair(0.5f, std::string("^")),
+	//	std::make_pair(0.5f, std::string("v"))
+	//});
 
 	//lsys->addRule('X', "-YF+XFX+FY-");
 	//lsys->addRule('Y', "+XF-YFY-FX+");

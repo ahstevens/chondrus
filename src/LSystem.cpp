@@ -13,61 +13,12 @@
 LSystem::LSystem()
 	: Dataset("Chondrus crispus")
 	, m_nIters(0)
+	, m_pCurrentNode(NULL)
 	, m_bNeedsRefresh(true)
 	, m_mtEngine(std::random_device()())
 	, m_UniformDist(0.f, 1.f)
 {
-	m_mapTurtleCommands['F'] = [&](glm::quat turtleHeading, glm::vec3 turtleScale, Scaffold::Node* prevNode)
-	{
-		glm::vec3 headingVec = glm::rotate(turtleHeading, glm::vec3(0.f, 1.f, 0.f));
-
-		turtlePos += headingVec * m_fSegLen;
-
-		checkNewRawPosition(turtlePos);
-
-		Scaffold::Node *node = new Scaffold::Node(turtlePos, turtleHeading, turtleScale);
-		node->parentNode = prevNode;
-		prevNode->vChildren.push_back(node);
-		m_Scaffold.vNodes.push_back(node);
-
-		Scaffold::Segment *seg = new Scaffold::Segment(prevNode, node);
-		prevNode->vSegments.push_back(seg);
-		node->vSegments.push_back(seg);
-		m_Scaffold.vSegments.push_back(seg);
-
-		prevNode = node;
-	};
-	m_mapTurtleCommands['+'] = []()
-	{
-		turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 0.f, 1.f));
-	}
-
-	case '-':
-		turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 0.f, 1.f));
-		break;
-	case '<':
-		turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 1.f, 0.f));
-		break;
-	case '>':
-		turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 1.f, 0.f));
-		break;
-	case '^':
-		turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(1.f, 0.f, 0.f));
-		break;
-	case 'v':
-		turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(1.f, 0.f, 0.f));
-		break;
-	case '[':
-		turtleStack.push_back(prevNode);
-		break;
-	case ']':
-		prevNode = turtleStack.back();
-		turtlePos = prevNode->vec3Pos;
-		turtleHeading = prevNode->qRot;
-		turtleStack.pop_back();
-		break;
-
-
+	makeTurtleCommands();
 
 	glGenVertexArrays(1, &m_glVAO);
 	glGenBuffers(1, &m_glVBO);
@@ -89,6 +40,64 @@ LSystem::LSystem()
 
 LSystem::~LSystem()
 {
+}
+
+void LSystem::makeTurtleCommands()
+{
+	m_mapTurtleCommands['F'] = std::function<void()>([&]() {
+		glm::vec3 headingVec = glm::rotate(m_qTurtleHeading, glm::vec3(0.f, 1.f, 0.f));
+
+		m_vec3TurtlePos += headingVec * m_fSegLen;
+
+		checkNewRawPosition(m_vec3TurtlePos);
+
+		Scaffold::Node *newNode = new Scaffold::Node(m_vec3TurtlePos, m_qTurtleHeading, m_vec3TurtleScale);
+		newNode->parentNode = m_pCurrentNode;
+		m_pCurrentNode->vChildren.push_back(newNode);
+		m_Scaffold.vNodes.push_back(newNode);
+
+		Scaffold::Segment *seg = new Scaffold::Segment(m_pCurrentNode, newNode);
+		m_pCurrentNode->vSegments.push_back(seg);
+		newNode->vSegments.push_back(seg);
+		m_Scaffold.vSegments.push_back(seg);
+
+		m_pCurrentNode = newNode;
+	});
+
+	m_mapTurtleCommands['+'] = std::function<void()>([&]() {
+		m_qTurtleHeading = glm::rotate(m_qTurtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 0.f, 1.f));
+	});
+
+	m_mapTurtleCommands['-'] = std::function<void()>([&]() {
+		m_qTurtleHeading = glm::rotate(m_qTurtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 0.f, 1.f));
+	});
+
+	m_mapTurtleCommands['<'] = std::function<void()>([&]() {
+		m_qTurtleHeading = glm::rotate(m_qTurtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+	});
+
+	m_mapTurtleCommands['>'] = std::function<void()>([&]() {
+		m_qTurtleHeading = glm::rotate(m_qTurtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+	});
+
+	m_mapTurtleCommands['^'] = std::function<void()>([&]() {
+		m_qTurtleHeading = glm::rotate(m_qTurtleHeading, glm::radians(m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+	});
+
+	m_mapTurtleCommands['v'] = std::function<void()>([&]() {
+		m_qTurtleHeading = glm::rotate(m_qTurtleHeading, glm::radians(-m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+	});
+
+	m_mapTurtleCommands['['] = std::function<void()>([&]() {
+		m_TurtleStack.push_back(m_pCurrentNode);
+	});
+
+	m_mapTurtleCommands[']'] = std::function<void()>([&]() {
+		m_pCurrentNode = m_TurtleStack.back();
+		m_vec3TurtlePos = m_pCurrentNode->vec3Pos;
+		m_qTurtleHeading = m_pCurrentNode->qRot;
+		m_TurtleStack.pop_back();
+	});
 }
 
 void LSystem::setStart(char symbol)
@@ -121,7 +130,7 @@ void LSystem::setRefreshNeeded()
 // returns true if a rule already exists for the symbol
 bool LSystem::addRule(char symbol, std::string replacement)
 {
-	std::map<char, std::vector<std::pair<float, std::string>>>::iterator it = m_mapRules.find(symbol);
+	RuleMap::iterator it = m_mapRules.find(symbol);
 
 	m_mapRules[symbol].clear();
 	m_mapRules[symbol].push_back(std::make_pair(1.f, replacement));
@@ -153,11 +162,46 @@ bool LSystem::addStochasticRules(char symbol, std::vector<std::pair<float, std::
 	return true;
 }
 
+// returns true if a rule already exists for the symbol
+bool LSystem::addFinishRule(char symbol, std::string replacement)
+{
+	RuleMap::iterator it = m_mapFinishRules.find(symbol);
+
+	m_mapFinishRules[symbol].clear();
+	m_mapFinishRules[symbol].push_back(std::make_pair(1.f, replacement));
+
+	m_bNeedsRefresh = true;
+
+	if (it != m_mapFinishRules.end())
+		return true;
+	else
+		return false;
+}
+
+bool LSystem::addStochasticFinishRules(char symbol, std::vector<std::pair<float, std::string>> replacementRules)
+{
+	float sum = 0.f;
+	float epsilon = 0.00001;
+	for (auto const &rule : replacementRules)
+	{
+		sum += rule.first;
+	}
+	if (fabs(sum - 1.f) > epsilon)
+	{
+		std::cerr << "Error: Finishing stochastic replacement rules for symbol '" << symbol << "' do not have probabilities that add up to 1.0 (total = " << sum << ")" << std::endl;
+		return false;
+	}
+
+	m_mapFinishRules[symbol] = replacementRules;
+
+	return true;
+}
+
 void LSystem::update()
 {
-	run();
-
 	reset();
+
+	std::cout << run() << std::endl;
 
 	//generateLines();
 	//generateQuads();
@@ -211,13 +255,18 @@ std::string LSystem::finish(std::string oldstr)
 {
 	std::string newstr;
 
-
-
 	for (auto const &c : oldstr)
 	{
 		std::string result;
-		if(applyRules(c, m_mapFinishRules, &result))
+		if (m_mapFinishRules.count(c) != 0)
+		{
+			applyRules(c, m_mapFinishRules, &result);
 			newstr += result;
+		}
+		else if (m_mapTurtleCommands.count(c) != 0)
+		{
+			newstr += std::string(1, c);
+		}
 	}
 
 	return newstr;
@@ -226,10 +275,10 @@ std::string LSystem::finish(std::string oldstr)
 bool LSystem::applyRules(char symbol, RuleMap rules, std::string *out)
 {
 	// Check if replacement rule exists for symbol
-	std::map<char, std::vector<std::pair<float, std::string>>>::iterator it = m_mapRules.find(symbol);
+	std::map<char, std::vector<std::pair<float, std::string>>>::iterator it = rules.find(symbol);
 
 	// Rule Exists
-	if (it != m_mapRules.end())
+	if (it != rules.end())
 	{
 		float val = m_UniformDist(m_mtEngine);
 		float cumsum = 0.f;
@@ -258,80 +307,27 @@ bool LSystem::applyRules(char symbol, RuleMap rules, std::string *out)
 
 void LSystem::build()
 {
-	glm::vec3 turtlePos(0.f);
-	glm::quat turtleHeading;
-	glm::vec3 turtleScale(1.f);
+	m_vec3TurtlePos = glm::vec3(0.f);
+	m_qTurtleHeading = glm::quat();
+	m_vec3TurtleScale = glm::vec3(1.f);
+	m_TurtleStack.clear();
 
-	std::vector<Scaffold::Node*> turtleStack;
-
-	Scaffold::Node *prevNode = new Scaffold::Node(turtlePos, turtleHeading, turtleScale);
-	m_Scaffold.vNodes.push_back(prevNode);
+	m_pCurrentNode = new Scaffold::Node(m_vec3TurtlePos, m_qTurtleHeading, m_vec3TurtleScale);
+	m_Scaffold.vNodes.push_back(m_pCurrentNode);
 
 	for (auto const& c : m_strResult)
 	{
-		switch (c)
-		{
-		case 'F':
-		{
-			glm::vec3 headingVec = glm::rotate(turtleHeading, glm::vec3(0.f, 1.f, 0.f));
-
-			turtlePos += headingVec * m_fSegLen;
-
-			checkNewRawPosition(turtlePos);
-
-			Scaffold::Node *node = new Scaffold::Node(turtlePos, turtleHeading, turtleScale);
-			node->parentNode = prevNode;
-			prevNode->vChildren.push_back(node);
-			m_Scaffold.vNodes.push_back(node);
-
-			Scaffold::Segment *seg = new Scaffold::Segment(prevNode, node);
-			prevNode->vSegments.push_back(seg);
-			node->vSegments.push_back(seg);
-			m_Scaffold.vSegments.push_back(seg);
-
-			prevNode = node;
-
-			break;
-		}
-		case '+':
-			turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 0.f, 1.f));
-			break;
-		case '-':
-			turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 0.f, 1.f));
-			break;
-		case '<':
-			turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 1.f, 0.f));
-			break;
-		case '>':
-			turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 1.f, 0.f));
-			break;
-		case '^':
-			turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(1.f, 0.f, 0.f));
-			break;
-		case 'v':
-			turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(1.f, 0.f, 0.f));
-			break;
-		case '[':
-			turtleStack.push_back(prevNode);
-			break;
-		case ']':
-			prevNode = turtleStack.back();
-			turtlePos = prevNode->vec3Pos;
-			turtleHeading = prevNode->qRot;
-			turtleStack.pop_back();
-			break;
-		default:
+		if (m_mapTurtleCommands.count(c))
+			m_mapTurtleCommands[c]();
+		else
 			std::cerr << "Error: Symbol '" << c << "' not found in turtle commands." << std::endl;
-		}
 	}
 }
 
 GLuint LSystem::getVAO()
 {
 	if (m_bNeedsRefresh)
-	{
 		update();
-	}
 
 	return m_glVAO;
 }
@@ -339,9 +335,7 @@ GLuint LSystem::getVAO()
 GLushort LSystem::getIndexCount()
 {
 	if (m_bNeedsRefresh)
-	{
 		update();
-	}
 
 	return m_vusInds.size();
 }
