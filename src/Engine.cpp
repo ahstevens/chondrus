@@ -233,7 +233,7 @@ void Engine::update(float dt)
 	m_pCamera->update(dt);
 
 	// Create camera transformations
-	glm::mat4 view = m_pCamera->getViewMatrix();
+	glm::mat4 view = m_pCamera->getViewMatrix() * glm::inverse(m_pArcball->getTransformation());
 	glm::mat4 projection = glm::perspective(
 		glm::radians(m_pCamera->getZoom()),
 		m_fAspect,
@@ -258,7 +258,7 @@ void Engine::draw()
 	rs.shaderName = "flat";
 	rs.VAO = lsys->getVAO();
 	rs.vertCount = lsys->getIndexCount();
-	rs.modelToWorldTransform = m_pArcball->getTransformation() * glm::mat4(lsys->getOrientation());
+	rs.modelToWorldTransform = glm::mat4(lsys->getOrientation()) * glm::translate(glm::mat4(), glm::vec3(lsys->getDataCenteringAdjustments()));
 
 	Renderer::getInstance().addToDynamicRenderQueue(rs);
 }
