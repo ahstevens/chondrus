@@ -57,6 +57,15 @@ private:
 	void generateMesh(uint16_t numSubsegments);
 
 private:
+	struct TurtleState {
+		glm::vec3 position;
+		glm::quat orientation;
+		glm::vec3 size; // x = width; y = length; z = thickness
+
+		TurtleState() : position(glm::vec3(0.f)), orientation(glm::quat()), size(glm::vec3(1.f)) {}
+		TurtleState(glm::vec3 pos, glm::quat orientation, glm::vec3 size) : position(pos), orientation(orientation), size(size) {}
+	};
+
 	struct Scaffold {
 		struct Node;
 		struct Segment {
@@ -81,7 +90,7 @@ private:
 			std::vector<Node*> vChildren;
 			glm::vec3 vec3Pos;
 			glm::quat qRot;
-			glm::vec3 vec3Scale; // x = width; y = length; z = thickness
+			glm::vec3 vec3Scale;
 
 			Node(glm::vec3 pos, glm::quat rot, glm::vec3 scale) : vec3Pos(pos), qRot(rot), vec3Scale(scale) {}
 		};
@@ -99,13 +108,12 @@ private:
 
 	CommandMap m_mapTurtleCommands;
 
-	glm::vec3 m_vec3TurtlePos;
-	glm::quat m_qTurtleHeading;
-	glm::vec3 m_vec3TurtleScale;
+	TurtleState m_Turtle;
 
-	std::vector<Scaffold::Node*> m_TurtleStack;
+	std::vector<TurtleState> m_vTurtleStack;
 
 	Scaffold::Node* m_pCurrentNode;
+	std::vector<Scaffold::Node*> m_vNodeStack;
 
 	bool m_bNeedsRefresh;
 

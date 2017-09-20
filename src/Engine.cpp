@@ -161,14 +161,21 @@ bool Engine::init()
 	lsys->setSegmentLength(1.f);
 	lsys->setStart('X');
 
-	lsys->addRule('X', "Y[+X]-X");
+	lsys->addRule('X', "YZ[+X]-X");
 	lsys->addStochasticRules('Y',
 	{
-		std::make_pair(0.5f, std::string("YY")),
+		std::make_pair(0.5f, std::string("Y")),
 		std::make_pair(0.5f, std::string("Y"))
 	});
 	lsys->addFinishRule('X', "F");
 	lsys->addFinishRule('Y', "F");
+	lsys->addStochasticFinishRules('Z',
+	{
+		std::make_pair(0.25f, std::string("<")),
+		std::make_pair(0.25f, std::string(">")),
+		std::make_pair(0.25f, std::string("^")),
+		std::make_pair(0.25f, std::string("v"))
+	});
 
 	//lsys->addRule('F', "FF-[vF^F^F]+[^FvFvF]<[^F^FvF]");
 

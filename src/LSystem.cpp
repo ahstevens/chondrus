@@ -45,13 +45,13 @@ LSystem::~LSystem()
 void LSystem::makeTurtleCommands()
 {
 	m_mapTurtleCommands['F'] = std::function<void()>([&]() {
-		glm::vec3 headingVec = glm::rotate(m_qTurtleHeading, glm::vec3(0.f, 1.f, 0.f));
+		glm::vec3 headingVec = glm::rotate(m_Turtle.orientation, glm::vec3(0.f, 1.f, 0.f));
 
-		m_vec3TurtlePos += headingVec * m_fSegLen;
+		m_Turtle.position += headingVec * m_fSegLen;
 
-		checkNewRawPosition(m_vec3TurtlePos);
+		checkNewRawPosition(m_Turtle.position);
 
-		Scaffold::Node *newNode = new Scaffold::Node(m_vec3TurtlePos, m_qTurtleHeading, m_vec3TurtleScale);
+		Scaffold::Node *newNode = new Scaffold::Node(m_Turtle.position, m_Turtle.orientation, m_Turtle.size);
 		newNode->parentNode = m_pCurrentNode;
 		m_pCurrentNode->vChildren.push_back(newNode);
 		m_Scaffold.vNodes.push_back(newNode);
@@ -65,38 +65,41 @@ void LSystem::makeTurtleCommands()
 	});
 
 	m_mapTurtleCommands['+'] = std::function<void()>([&]() {
-		m_qTurtleHeading = glm::rotate(m_qTurtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 0.f, 1.f));
+		m_Turtle.orientation = glm::rotate(m_Turtle.orientation, glm::radians(m_fAngle), glm::vec3(0.f, 0.f, 1.f));
 	});
 
 	m_mapTurtleCommands['-'] = std::function<void()>([&]() {
-		m_qTurtleHeading = glm::rotate(m_qTurtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 0.f, 1.f));
+		m_Turtle.orientation = glm::rotate(m_Turtle.orientation, glm::radians(-m_fAngle), glm::vec3(0.f, 0.f, 1.f));
 	});
 
 	m_mapTurtleCommands['<'] = std::function<void()>([&]() {
-		m_qTurtleHeading = glm::rotate(m_qTurtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+		m_Turtle.orientation = glm::rotate(m_Turtle.orientation, glm::radians(m_fAngle), glm::vec3(0.f, 1.f, 0.f));
 	});
 
 	m_mapTurtleCommands['>'] = std::function<void()>([&]() {
-		m_qTurtleHeading = glm::rotate(m_qTurtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+		m_Turtle.orientation = glm::rotate(m_Turtle.orientation, glm::radians(-m_fAngle), glm::vec3(0.f, 1.f, 0.f));
 	});
 
 	m_mapTurtleCommands['^'] = std::function<void()>([&]() {
-		m_qTurtleHeading = glm::rotate(m_qTurtleHeading, glm::radians(m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+		m_Turtle.orientation = glm::rotate(m_Turtle.orientation, glm::radians(m_fAngle), glm::vec3(1.f, 0.f, 0.f));
 	});
 
 	m_mapTurtleCommands['v'] = std::function<void()>([&]() {
-		m_qTurtleHeading = glm::rotate(m_qTurtleHeading, glm::radians(-m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+		m_Turtle.orientation = glm::rotate(m_Turtle.orientation, glm::radians(-m_fAngle), glm::vec3(1.f, 0.f, 0.f));
 	});
 
 	m_mapTurtleCommands['['] = std::function<void()>([&]() {
-		m_TurtleStack.push_back(m_pCurrentNode);
+		m_vTurtleStack.push_back(m_Turtle);
+
+		m_vNodeStack.push_back(m_pCurrentNode);
 	});
 
 	m_mapTurtleCommands[']'] = std::function<void()>([&]() {
-		m_pCurrentNode = m_TurtleStack.back();
-		m_vec3TurtlePos = m_pCurrentNode->vec3Pos;
-		m_qTurtleHeading = m_pCurrentNode->qRot;
-		m_TurtleStack.pop_back();
+		m_Turtle = m_vTurtleStack.back();
+		m_vTurtleStack.pop_back();
+
+		m_pCurrentNode = m_vNodeStack.back();
+		m_vNodeStack.pop_back();
 	});
 }
 
@@ -307,12 +310,10 @@ bool LSystem::applyRules(char symbol, RuleMap rules, std::string *out)
 
 void LSystem::build()
 {
-	m_vec3TurtlePos = glm::vec3(0.f);
-	m_qTurtleHeading = glm::quat();
-	m_vec3TurtleScale = glm::vec3(1.f);
-	m_TurtleStack.clear();
+	m_Turtle = TurtleState();
+	m_vTurtleStack.clear();
 
-	m_pCurrentNode = new Scaffold::Node(m_vec3TurtlePos, m_qTurtleHeading, m_vec3TurtleScale);
+	m_pCurrentNode = new Scaffold::Node(m_Turtle.position, m_Turtle.orientation, m_Turtle.size);
 	m_Scaffold.vNodes.push_back(m_pCurrentNode);
 
 	for (auto const& c : m_strResult)
