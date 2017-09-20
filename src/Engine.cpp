@@ -186,13 +186,11 @@ bool Engine::init()
 	//	std::make_pair(0.5f, std::string("FF"))
 	//});
 
-	lsys->addRule('F', "F[XFXF]");
-	lsys->addStochasticRules('X',
+	lsys->addRule('F', "FX[+F][-F]");
+	lsys->addStochasticRules('X', 
 	{
-		std::make_pair(0.25f, std::string("+")),
-		std::make_pair(0.25f, std::string("-")),
-		std::make_pair(0.25f, std::string("^")),
-		std::make_pair(0.25f, std::string("v")),
+		std::make_pair(0.5f, std::string("^")),
+		std::make_pair(0.5f, std::string("v"))
 	});
 
 	//lsys->addRule('X', "-YF+XFX+FY-");

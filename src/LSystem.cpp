@@ -17,6 +17,58 @@ LSystem::LSystem()
 	, m_mtEngine(std::random_device()())
 	, m_UniformDist(0.f, 1.f)
 {
+	m_mapTurtleCommands['F'] = [&](glm::quat turtleHeading, glm::vec3 turtleScale, Scaffold::Node* prevNode)
+	{
+		glm::vec3 headingVec = glm::rotate(turtleHeading, glm::vec3(0.f, 1.f, 0.f));
+
+		turtlePos += headingVec * m_fSegLen;
+
+		checkNewRawPosition(turtlePos);
+
+		Scaffold::Node *node = new Scaffold::Node(turtlePos, turtleHeading, turtleScale);
+		node->parentNode = prevNode;
+		prevNode->vChildren.push_back(node);
+		m_Scaffold.vNodes.push_back(node);
+
+		Scaffold::Segment *seg = new Scaffold::Segment(prevNode, node);
+		prevNode->vSegments.push_back(seg);
+		node->vSegments.push_back(seg);
+		m_Scaffold.vSegments.push_back(seg);
+
+		prevNode = node;
+	};
+	m_mapTurtleCommands['+'] = []()
+	{
+		turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 0.f, 1.f));
+	}
+
+	case '-':
+		turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 0.f, 1.f));
+		break;
+	case '<':
+		turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+		break;
+	case '>':
+		turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+		break;
+	case '^':
+		turtleHeading = glm::rotate(turtleHeading, glm::radians(m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+		break;
+	case 'v':
+		turtleHeading = glm::rotate(turtleHeading, glm::radians(-m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+		break;
+	case '[':
+		turtleStack.push_back(prevNode);
+		break;
+	case ']':
+		prevNode = turtleStack.back();
+		turtlePos = prevNode->vec3Pos;
+		turtleHeading = prevNode->qRot;
+		turtleStack.pop_back();
+		break;
+
+
+
 	glGenVertexArrays(1, &m_glVAO);
 	glGenBuffers(1, &m_glVBO);
 	glGenBuffers(1, &m_glEBO);
@@ -118,33 +170,99 @@ void LSystem::update()
 
 std::string LSystem::run()
 {
+	// just return the result string if no refresh is necessary
 	if (!m_bNeedsRefresh)
 		return m_strResult;
 
+	// set the axiom
 	std::string startStr = std::string(1, m_chStartSymbol);
 	std::string endStr;
 
+	// iterate parallel rewriting the specified number of times
 	for (unsigned int i = 0u; i < m_nIters; ++i)
 	{
-		endStr = process(startStr);
+		endStr = iterate(startStr);
 		startStr = endStr;
 	}
 
-	m_strResult = endStr;
+	// apply rules to finish the rewriting
+	m_strResult = finish(endStr);
 
+	build();
+
+	return m_strResult;
+}
+
+std::string LSystem::iterate(std::string oldstr)
+{
+	std::string newstr;
+
+	for (auto const &c : oldstr)
+	{
+		std::string result;
+		applyRules(c, m_mapRules, &result);
+		newstr += result;
+	}
+
+	return newstr;
+}
+
+std::string LSystem::finish(std::string oldstr)
+{
+	std::string newstr;
+
+
+
+	for (auto const &c : oldstr)
+	{
+		std::string result;
+		if(applyRules(c, m_mapFinishRules, &result))
+			newstr += result;
+	}
+
+	return newstr;
+}
+
+bool LSystem::applyRules(char symbol, RuleMap rules, std::string *out)
+{
+	// Check if replacement rule exists for symbol
+	std::map<char, std::vector<std::pair<float, std::string>>>::iterator it = m_mapRules.find(symbol);
+
+	// Rule Exists
+	if (it != m_mapRules.end())
+	{
+		float val = m_UniformDist(m_mtEngine);
+		float cumsum = 0.f;
+
+		for (auto const &rule : it->second)
+		{
+			cumsum += rule.first;
+			if (val <= cumsum)
+			{
+				*out = rule.second;
+				return true;
+			}
+		}
+
+		std::cerr << "Error: Failed to apply stochastic rules for symbol '" << symbol << "'!" << std::endl;
+
+		*out = std::string(1, symbol);
+		return false;
+	}
+	else // Rule does not exist
+	{
+		*out = std::string(1, symbol);
+		return false;
+	}
+}
+
+void LSystem::build()
+{
 	glm::vec3 turtlePos(0.f);
 	glm::quat turtleHeading;
 	glm::vec3 turtleScale(1.f);
 
 	std::vector<Scaffold::Node*> turtleStack;
-
-	for (auto &n : m_Scaffold.vNodes)
-		delete n;
-	m_Scaffold.vNodes.clear();
-
-	for (auto &s : m_Scaffold.vSegments)
-		delete s;
-	m_Scaffold.vSegments.clear();
 
 	Scaffold::Node *prevNode = new Scaffold::Node(turtlePos, turtleHeading, turtleScale);
 	m_Scaffold.vNodes.push_back(prevNode);
@@ -206,8 +324,6 @@ std::string LSystem::run()
 			std::cerr << "Error: Symbol '" << c << "' not found in turtle commands." << std::endl;
 		}
 	}
-
-	return m_strResult;
 }
 
 GLuint LSystem::getVAO()
@@ -230,49 +346,19 @@ GLushort LSystem::getIndexCount()
 	return m_vusInds.size();
 }
 
-std::string LSystem::process(std::string oldstr)
-{
-	std::string newstr;
-
-	for (auto const &c : oldstr)
-		newstr += applyRules(c);
-
-	return newstr;
-}
-
-std::string LSystem::applyRules(char symbol)
-{
-	// Check if replacement rule exists for symbol
-	std::map<char, std::vector<std::pair<float, std::string>>>::iterator it = m_mapRules.find(symbol);
-
-	// Rule Exists
-	if (it != m_mapRules.end())
-	{
-		float val = m_UniformDist(m_mtEngine);
-		float cumsum = 0.f;
-
-		for (auto const &rule : it->second)
-		{
-			cumsum += rule.first;
-			if (val <= cumsum)
-				return rule.second;
-		}
-
-		std::cerr << "Error: Failed to apply stochastic rules for symbol '" << symbol << "'!" << std::endl;
-
-		return std::string(1, symbol);
-	}
-	else // Rule does not exist
-	{
-		return std::string(1, symbol);
-	}
-}
-
 void LSystem::reset()
 {
 	m_vvec3Points.clear();
 	m_vvec4Colors.clear();
-	m_vusInds.clear();
+	m_vusInds.clear();	
+	
+	for (auto &n : m_Scaffold.vNodes)
+		delete n;
+	m_Scaffold.vNodes.clear();
+
+	for (auto &s : m_Scaffold.vSegments)
+		delete s;
+	m_Scaffold.vSegments.clear();
 }
 
 void LSystem::refreshGL()

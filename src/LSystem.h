@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <random>
+#include <functional>
 
 #include <GL/glew.h>
 
@@ -15,6 +16,9 @@
 
 class LSystem : public Object, public Dataset
 {
+	typedef std::map<char, std::vector<std::pair<float, std::string>>> RuleMap;
+	typedef std::map<char, std::function<void>> CommandMap;
+
 public:	
 	LSystem();
 	~LSystem();
@@ -35,8 +39,10 @@ public:
 	GLushort getIndexCount();
 
 private:
-	std::string process(std::string oldstr);
-	std::string applyRules(char symbol);
+	std::string iterate(std::string oldstr);
+	std::string finish(std::string oldstr);
+	bool applyRules(char symbol, RuleMap rules, std::string *out);
+	void build();
 
 	void reset();
 
@@ -47,6 +53,7 @@ private:
 	void generateMesh(uint16_t numSubsegments);
 
 private:
+
 	struct Scaffold {
 		struct Node;
 		struct Segment {
@@ -83,8 +90,11 @@ private:
 private:
 	float m_fAngle, m_fSegLen;
 	unsigned int m_nIters;
-	std::map<char, std::vector<std::pair<float, std::string>>> m_mapRules; // symbols map to vectors of replacement/probability pairs
+	RuleMap m_mapRules; // symbols map to vectors of probability/replacement string pairs
+	RuleMap m_mapFinishRules; // finishing symbols map to vectors of probability/replacement string pairs
 	char m_chStartSymbol;
+
+	CommandMap m_mapTurtleCommands;
 
 	bool m_bNeedsRefresh;
 
