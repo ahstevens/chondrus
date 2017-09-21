@@ -20,22 +20,7 @@ LSystem::LSystem()
 {
 	makeTurtleCommands();
 
-	glGenVertexArrays(1, &m_glVAO);
-	glGenBuffers(1, &m_glVBO);
-	glGenBuffers(1, &m_glEBO);
-
-	glBindVertexArray(this->m_glVAO);
-		// Bind the array and element buffers
-		glBindBuffer(GL_ARRAY_BUFFER, this->m_glVBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->m_glEBO);
-
-		// Enable attribute arrays (with layouts to be defined later)
-		glEnableVertexAttribArray(POSITION_ATTRIB_LOCATION);
-		glVertexAttribPointer(POSITION_ATTRIB_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
-		glEnableVertexAttribArray(COLOR_ATTRIB_LOCATION);
-		// color attribute pointer will be set once position array size is known for attrib pointer offset
-
-	glBindVertexArray(0);
+	initGL();
 }
 
 LSystem::~LSystem()
@@ -101,6 +86,26 @@ void LSystem::makeTurtleCommands()
 		m_pCurrentNode = m_vNodeStack.back();
 		m_vNodeStack.pop_back();
 	});
+}
+
+void LSystem::initGL()
+{
+	glGenVertexArrays(1, &m_glVAO);
+	glGenBuffers(1, &m_glVBO);
+	glGenBuffers(1, &m_glEBO);
+
+	glBindVertexArray(this->m_glVAO);
+	// Bind the array and element buffers
+	glBindBuffer(GL_ARRAY_BUFFER, this->m_glVBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->m_glEBO);
+
+	// Enable attribute arrays (with layouts to be defined later)
+	glEnableVertexAttribArray(POSITION_ATTRIB_LOCATION);
+	glVertexAttribPointer(POSITION_ATTRIB_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+	glEnableVertexAttribArray(COLOR_ATTRIB_LOCATION);
+	// color attribute pointer will be set once position array size is known for attrib pointer offset
+
+	glBindVertexArray(0);
 }
 
 void LSystem::setStart(char symbol)

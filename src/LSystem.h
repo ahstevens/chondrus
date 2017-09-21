@@ -42,6 +42,7 @@ public:
 
 private:
 	void makeTurtleCommands();
+	void initGL();
 
 	std::string iterate(std::string oldstr);
 	std::string finish(std::string oldstr);
