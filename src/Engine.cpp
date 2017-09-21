@@ -157,15 +157,15 @@ bool Engine::init()
 
 	lsys = new LSystem();
 	lsys->setIterations(4);
-	lsys->setAngle(30.f);
+	lsys->setAngle(35.f);
 	lsys->setSegmentLength(1.f);
 	lsys->setStart('X');
 
 	lsys->addRule('X', "YZ[+X]-X");
 	lsys->addStochasticRules('Y',
 	{
-		std::make_pair(0.5f, std::string("Y")),
-		std::make_pair(0.5f, std::string("Y"))
+		std::make_pair(0.9f, std::string("Y")),
+		std::make_pair(0.1f, std::string("YY"))
 	});
 	lsys->addFinishRule('X', "F");
 	lsys->addFinishRule('Y', "F");

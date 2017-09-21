@@ -310,9 +310,6 @@ bool LSystem::applyRules(char symbol, RuleMap rules, std::string *out)
 
 void LSystem::build()
 {
-	m_Turtle = TurtleState();
-	m_vTurtleStack.clear();
-
 	m_pCurrentNode = new Scaffold::Node(m_Turtle.position, m_Turtle.orientation, m_Turtle.size);
 	m_Scaffold.vNodes.push_back(m_pCurrentNode);
 
@@ -345,7 +342,10 @@ void LSystem::reset()
 {
 	m_vvec3Points.clear();
 	m_vvec4Colors.clear();
-	m_vusInds.clear();	
+	m_vusInds.clear();
+
+	m_Turtle = TurtleState();
+	m_vTurtleStack.clear();
 	
 	for (auto &n : m_Scaffold.vNodes)
 		delete n;
@@ -354,6 +354,8 @@ void LSystem::reset()
 	for (auto &s : m_Scaffold.vSegments)
 		delete s;
 	m_Scaffold.vSegments.clear();
+
+	resetDataBounds();
 }
 
 void LSystem::refreshGL()

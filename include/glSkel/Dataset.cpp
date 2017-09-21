@@ -257,6 +257,16 @@ bool Dataset::isOutputRightHanded()
 	return m_bRHCoordSys_output;
 }
 
+void Dataset::resetDataBounds()
+{
+	m_dvec3RawMinBounds = glm::dvec3(std::numeric_limits<double>::max());
+	m_dvec3RawMaxBounds = glm::dvec3(-std::numeric_limits<double>::max());
+	m_vec3AdjustedMinBounds = glm::vec3(std::numeric_limits<float>::max());
+	m_vec3AdjustedMaxBounds = glm::vec3(-std::numeric_limits<float>::max());
+
+	m_bNeedsUpdate = true;
+}
+
 void Dataset::update()
 {
 	if (m_bNeedsUpdate)

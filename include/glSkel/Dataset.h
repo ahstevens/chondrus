@@ -53,6 +53,8 @@ public:
 	bool isDataRightHanded();
 	bool isOutputRightHanded();
 
+	void resetDataBounds();
+
 private:
 	void setRawMinBounds(glm::dvec3 minBounds);
 	void setRawXMin(double xMin);
