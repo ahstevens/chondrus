@@ -32,7 +32,7 @@ void LSystem::makeTurtleCommands()
 	m_mapTurtleCommands['F'] = std::function<void()>([&]() {
 		glm::vec3 headingVec = glm::rotate(m_Turtle.orientation, glm::vec3(0.f, 1.f, 0.f));
 
-		m_Turtle.position += headingVec * m_fSegLen;
+		m_Turtle.position += headingVec * m_Turtle.stepSize;
 
 		checkNewRawPosition(m_Turtle.position);
 
@@ -50,27 +50,51 @@ void LSystem::makeTurtleCommands()
 	});
 
 	m_mapTurtleCommands['+'] = std::function<void()>([&]() {
-		m_Turtle.orientation = glm::rotate(m_Turtle.orientation, glm::radians(m_fAngle), glm::vec3(0.f, 0.f, 1.f));
+		m_Turtle.orientation = glm::rotate(
+			m_Turtle.orientation, 
+			glm::radians(m_Turtle.turnAngle), 
+			glm::vec3(0.f, 0.f, 1.f)
+		);
 	});
 
 	m_mapTurtleCommands['-'] = std::function<void()>([&]() {
-		m_Turtle.orientation = glm::rotate(m_Turtle.orientation, glm::radians(-m_fAngle), glm::vec3(0.f, 0.f, 1.f));
+		m_Turtle.orientation = glm::rotate(
+			m_Turtle.orientation,
+			glm::radians(-m_Turtle.turnAngle),
+			glm::vec3(0.f, 0.f, 1.f)
+		);
 	});
 
 	m_mapTurtleCommands['<'] = std::function<void()>([&]() {
-		m_Turtle.orientation = glm::rotate(m_Turtle.orientation, glm::radians(m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+		m_Turtle.orientation = glm::rotate(
+			m_Turtle.orientation,
+			glm::radians(m_Turtle.turnAngle),
+			glm::vec3(0.f, 1.f, 0.f)
+		);
 	});
 
 	m_mapTurtleCommands['>'] = std::function<void()>([&]() {
-		m_Turtle.orientation = glm::rotate(m_Turtle.orientation, glm::radians(-m_fAngle), glm::vec3(0.f, 1.f, 0.f));
+		m_Turtle.orientation = glm::rotate(
+			m_Turtle.orientation,
+			glm::radians(-m_Turtle.turnAngle),
+			glm::vec3(0.f, 1.f, 0.f)
+		);
 	});
 
 	m_mapTurtleCommands['^'] = std::function<void()>([&]() {
-		m_Turtle.orientation = glm::rotate(m_Turtle.orientation, glm::radians(m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+		m_Turtle.orientation = glm::rotate(
+			m_Turtle.orientation,
+			glm::radians(m_Turtle.turnAngle),
+			glm::vec3(1.f, 0.f, 0.f)
+		);
 	});
 
 	m_mapTurtleCommands['v'] = std::function<void()>([&]() {
-		m_Turtle.orientation = glm::rotate(m_Turtle.orientation, glm::radians(-m_fAngle), glm::vec3(1.f, 0.f, 0.f));
+		m_Turtle.orientation = glm::rotate(
+			m_Turtle.orientation,
+			glm::radians(-m_Turtle.turnAngle),
+			glm::vec3(1.f, 0.f, 0.f)
+		);
 	});
 
 	m_mapTurtleCommands['['] = std::function<void()>([&]() {
@@ -122,12 +146,12 @@ void LSystem::setIterations(unsigned int iters)
 
 void LSystem::setAngle(float angle)
 {
-	m_fAngle = angle;
+	m_Turtle.turnAngle = angle;
 }
 
 void LSystem::setSegmentLength(float len)
 {
-	m_fSegLen = len;
+	m_Turtle.stepSize = len;
 }
 
 void LSystem::setRefreshNeeded()
@@ -412,7 +436,10 @@ void LSystem::generateQuads()
 
 		glm::mat3 tRot = glm::mat3_cast(seg->terminus->qRot);
 
-		glm::vec3 localRight = glm::normalize(tRot[0]) * (m_fSegLen / 10.f);
+		glm::vec3 segVector = seg->terminus->vec3Pos - seg->origin->vec3Pos;
+		float segLen = glm::length(segVector);
+
+		glm::vec3 localRight = glm::normalize(tRot[0]) * (segLen / 10.f);
 		glm::vec3 localLeft = -localRight;
 
 		m_vvec3Points.push_back(seg->origin->vec3Pos + localLeft);
@@ -445,6 +472,10 @@ void LSystem::generateMesh(uint16_t numSubsegments)
 		glm::vec3 terminusHeading(glm::rotate(seg->terminus->qRot, glm::vec3(0.f, 1.f, 0.f)));
 		
 		glm::vec3 segVector = seg->terminus->vec3Pos - seg->origin->vec3Pos;
+		float segLen = glm::length(segVector);
+
+		float beginSize = seg->origin->vec3Scale.x;
+		float endSize = seg->terminus->vec3Scale.x;
 
 		float stepSize = 1.f / (float)(numSubsegments);
 
@@ -460,10 +491,10 @@ void LSystem::generateMesh(uint16_t numSubsegments)
 			glm::mat3 rotStart = glm::mat3_cast(interpQuatStart);
 			glm::mat3 rotEnd = glm::mat3_cast(interpQuatEnd);
 
-			glm::vec3 localRightStart = glm::normalize(rotStart[0]) * (m_fSegLen / 10.f);
+			glm::vec3 localRightStart = glm::normalize(rotStart[0]) * (segLen / 10.f);
 			glm::vec3 localLeftStart = -localRightStart;
 
-			glm::vec3 localRightEnd = glm::normalize(rotEnd[0]) * (m_fSegLen / 10.f);
+			glm::vec3 localRightEnd = glm::normalize(rotEnd[0]) * (segLen / 10.f);
 			glm::vec3 localLeftEnd = -localRightEnd;
 
 			glm::vec3 startPos = seg->origin->vec3Pos + segVector * mixRatioStart;

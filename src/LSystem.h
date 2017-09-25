@@ -62,9 +62,11 @@ private:
 		glm::vec3 position;
 		glm::quat orientation;
 		glm::vec3 size; // x = width; y = length; z = thickness
+		float stepSize;
+		float turnAngle; // degrees
 
-		TurtleState() : position(glm::vec3(0.f)), orientation(glm::quat()), size(glm::vec3(1.f)) {}
-		TurtleState(glm::vec3 pos, glm::quat orientation, glm::vec3 size) : position(pos), orientation(orientation), size(size) {}
+		TurtleState() : position(glm::vec3(0.f)), orientation(glm::quat()), size(glm::vec3(1.f)), stepSize(1.f), turnAngle(25.f) {}
+		TurtleState(glm::vec3 pos, glm::quat orientation, glm::vec3 size, float stepSize, float turnAngle) : position(pos), orientation(orientation), size(size), stepSize(stepSize), turnAngle(turnAngle) {}
 	};
 
 	struct Scaffold {
@@ -101,7 +103,6 @@ private:
 	};
 
 private:
-	float m_fAngle, m_fSegLen;
 	unsigned int m_nIters;
 	RuleMap m_mapRules; // symbols map to vectors of probability/replacement string pairs
 	RuleMap m_mapFinishRules; // finishing symbols map to vectors of probability/replacement string pairs
