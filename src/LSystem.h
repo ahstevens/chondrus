@@ -27,6 +27,7 @@ public:
 	void setIterations(unsigned int iters);
 	void setAngle(float angle);
 	void setSegmentLength(float len);
+	void setSize(glm::vec3 size);
 	void setRefreshNeeded();
 	bool addRule(char symbol, std::string replacement);
 	bool addStochasticRules(char symbol, std::vector<std::pair<float, std::string>> replacementRules);
@@ -61,12 +62,11 @@ private:
 	struct TurtleState {
 		glm::vec3 position;
 		glm::quat orientation;
-		glm::vec3 size; // x = width; y = length; z = thickness
-		float stepSize;
+		glm::vec3 size; // x = width; y = forwardStepLength; z = thickness
 		float turnAngle; // degrees
 
-		TurtleState() : position(glm::vec3(0.f)), orientation(glm::quat()), size(glm::vec3(1.f)), stepSize(1.f), turnAngle(25.f) {}
-		TurtleState(glm::vec3 pos, glm::quat orientation, glm::vec3 size, float stepSize, float turnAngle) : position(pos), orientation(orientation), size(size), stepSize(stepSize), turnAngle(turnAngle) {}
+		TurtleState() : position(glm::vec3(0.f)), orientation(glm::quat()), size(glm::vec3(1.f)), turnAngle(25.f) {}
+		TurtleState(glm::vec3 pos, glm::quat orientation, glm::vec3 size, float stepSize, float turnAngle) : position(pos), orientation(orientation), size(size), turnAngle(turnAngle) {}
 	};
 
 	struct Scaffold {
@@ -110,7 +110,7 @@ private:
 
 	CommandMap m_mapTurtleCommands;
 
-	TurtleState m_Turtle;
+	TurtleState m_Turtle, m_TurtleOriginalState;
 
 	std::vector<TurtleState> m_vTurtleStack;
 

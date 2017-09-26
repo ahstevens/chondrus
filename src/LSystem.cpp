@@ -30,9 +30,17 @@ LSystem::~LSystem()
 void LSystem::makeTurtleCommands()
 {
 	m_mapTurtleCommands['F'] = std::function<void()>([&]() {
+		float currentTreeDepth = 0.f;
+		for (auto p = m_pCurrentNode; p != NULL; p = p->parentNode)
+			currentTreeDepth += 1.f;
+
+		glm::vec3 scaler = glm::vec3(1.f, 0.85f, 1.f);
+		scaler.x *= 1.35f * scaler.y;
+
 		glm::vec3 headingVec = glm::rotate(m_Turtle.orientation, glm::vec3(0.f, 1.f, 0.f));
 
-		m_Turtle.position += headingVec * m_Turtle.stepSize;
+		m_Turtle.size *= scaler;
+		m_Turtle.position += headingVec * m_Turtle.size.y;
 
 		checkNewRawPosition(m_Turtle.position);
 
@@ -146,12 +154,12 @@ void LSystem::setIterations(unsigned int iters)
 
 void LSystem::setAngle(float angle)
 {
-	m_Turtle.turnAngle = angle;
+	m_TurtleOriginalState.turnAngle = angle;
 }
 
-void LSystem::setSegmentLength(float len)
+void LSystem::setSize(glm::vec3 size)
 {
-	m_Turtle.stepSize = len;
+	m_TurtleOriginalState.size = size;
 }
 
 void LSystem::setRefreshNeeded()
@@ -340,6 +348,7 @@ bool LSystem::applyRules(char symbol, RuleMap rules, std::string *out)
 void LSystem::build()
 {
 	m_pCurrentNode = new Scaffold::Node(m_Turtle.position, m_Turtle.orientation, m_Turtle.size);
+	m_pCurrentNode->parentNode = NULL;
 	m_Scaffold.vNodes.push_back(m_pCurrentNode);
 
 	for (auto const& c : m_strResult)
@@ -373,7 +382,7 @@ void LSystem::reset()
 	m_vvec4Colors.clear();
 	m_vusInds.clear();
 
-	m_Turtle = TurtleState();
+	m_Turtle = m_TurtleOriginalState;
 	m_vTurtleStack.clear();
 	
 	for (auto &n : m_Scaffold.vNodes)
@@ -383,6 +392,8 @@ void LSystem::reset()
 	for (auto &s : m_Scaffold.vSegments)
 		delete s;
 	m_Scaffold.vSegments.clear();
+
+	m_pCurrentNode = NULL;
 
 	resetDataBounds();
 }
@@ -491,10 +502,10 @@ void LSystem::generateMesh(uint16_t numSubsegments)
 			glm::mat3 rotStart = glm::mat3_cast(interpQuatStart);
 			glm::mat3 rotEnd = glm::mat3_cast(interpQuatEnd);
 
-			glm::vec3 localRightStart = glm::normalize(rotStart[0]) * (segLen / 10.f);
+			glm::vec3 localRightStart = glm::normalize(rotStart[0]) * glm::mix(beginSize, endSize, mixRatioStart) * 0.5f;
 			glm::vec3 localLeftStart = -localRightStart;
 
-			glm::vec3 localRightEnd = glm::normalize(rotEnd[0]) * (segLen / 10.f);
+			glm::vec3 localRightEnd = glm::normalize(rotEnd[0]) * glm::mix(beginSize, endSize, mixRatioEnd) * 0.5f;
 			glm::vec3 localLeftEnd = -localRightEnd;
 
 			glm::vec3 startPos = seg->origin->vec3Pos + segVector * mixRatioStart;
@@ -508,23 +519,23 @@ void LSystem::generateMesh(uint16_t numSubsegments)
 				m_vvec3Points.push_back(startPos + localLeftStart);
 				m_vvec3Points.push_back(startPos);
 				m_vvec3Points.push_back(startPos + localRightStart);
-				//m_vvec4Colors.push_back(glm::vec4((rotStart[1] + 1.f) * 0.5f, 1.f));
-				//m_vvec4Colors.push_back(glm::vec4((rotStart[1] + 1.f) * 0.5f, 1.f));
-				//m_vvec4Colors.push_back(glm::vec4((rotStart[1] + 1.f) * 0.5f, 1.f));
-				m_vvec4Colors.push_back(glm::vec4(startColor, 1.f));
-				m_vvec4Colors.push_back(glm::vec4(startColor, 1.f));
-				m_vvec4Colors.push_back(glm::vec4(startColor, 1.f));
+				m_vvec4Colors.push_back(glm::vec4((rotStart[1] + 1.f) * 0.5f, 1.f));
+				m_vvec4Colors.push_back(glm::vec4((rotStart[1] + 1.f) * 0.5f, 1.f));
+				m_vvec4Colors.push_back(glm::vec4((rotStart[1] + 1.f) * 0.5f, 1.f));
+				//m_vvec4Colors.push_back(glm::vec4(startColor, 1.f));
+				//m_vvec4Colors.push_back(glm::vec4(startColor, 1.f));
+				//m_vvec4Colors.push_back(glm::vec4(startColor, 1.f));
 			}
 
 			m_vvec3Points.push_back(endPos + localLeftEnd);
 			m_vvec3Points.push_back(endPos);
 			m_vvec3Points.push_back(endPos + localRightEnd);
-			//m_vvec4Colors.push_back(glm::vec4((rotEnd[1] + 1.f) * 0.5f, 1.f));
-			//m_vvec4Colors.push_back(glm::vec4((rotEnd[1] + 1.f) * 0.5f, 1.f));
-			//m_vvec4Colors.push_back(glm::vec4((rotEnd[1] + 1.f) * 0.5f, 1.f));
-			m_vvec4Colors.push_back(glm::vec4(endColor, 1.f));
-			m_vvec4Colors.push_back(glm::vec4(endColor, 1.f));
-			m_vvec4Colors.push_back(glm::vec4(endColor, 1.f));
+			m_vvec4Colors.push_back(glm::vec4((rotEnd[1] + 1.f) * 0.5f, 1.f));
+			m_vvec4Colors.push_back(glm::vec4((rotEnd[1] + 1.f) * 0.5f, 1.f));
+			m_vvec4Colors.push_back(glm::vec4((rotEnd[1] + 1.f) * 0.5f, 1.f));
+			//m_vvec4Colors.push_back(glm::vec4(endColor, 1.f));
+			//m_vvec4Colors.push_back(glm::vec4(endColor, 1.f));
+			//m_vvec4Colors.push_back(glm::vec4(endColor, 1.f));
 
 			m_vusInds.push_back(m_vvec3Points.size() - 6u);
 			m_vusInds.push_back(m_vvec3Points.size() - 5u);

@@ -158,9 +158,9 @@ bool Engine::init()
 	lsys = new LSystem();
 	lsys->setIterations(4);
 	lsys->setAngle(35.f);
-	lsys->setSegmentLength(1.f);
+	lsys->setSize(glm::vec3(0.1f, 1.f, 1.f));
 	lsys->setStart('X');
-
+	
 	lsys->addRule('X', "YZ[+X]-X");
 	lsys->addStochasticRules('Y',
 	{
