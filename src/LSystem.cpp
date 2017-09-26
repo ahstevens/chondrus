@@ -30,8 +30,8 @@ LSystem::~LSystem()
 void LSystem::makeTurtleCommands()
 {
 	m_mapTurtleCommands['F'] = std::function<void()>([&]() {
-		glm::vec3 scaler = glm::vec3(1.f, 0.85f, 1.f);
-		scaler.x *= 1.40f * scaler.y;
+		glm::vec3 scaler = glm::vec3(1.f, 0.9f, 1.f);
+		scaler.x *= 1.30f * scaler.y;
 
 		glm::vec3 headingVec = glm::rotate(m_Turtle.orientation, glm::vec3(0.f, 1.f, 0.f));
 
@@ -565,15 +565,17 @@ void LSystem::generateMesh(uint16_t numSubsegments)
 				glm::vec3 pt1(0.f);
 				glm::vec3 pt2(0.f);
 
-				pt1.x = sin(glm::half_pi<float>() - glm::pi<float>() * ratio);
-				pt1.y = cos(glm::half_pi<float>() - glm::pi<float>() * ratio);
+				pt1.x = sin(glm::pi<float>() * ratio);
+				pt1.y = cos(glm::pi<float>() * ratio);
 
-				pt2.x = sin(glm::half_pi<float>() - glm::pi<float>() * (ratio + stepSize));
-				pt2.y = cos(glm::half_pi<float>() - glm::pi<float>() * (ratio + stepSize));
+				pt2.x = sin(glm::pi<float>() * (ratio + stepSize));
+				pt2.y = cos(glm::pi<float>() * (ratio + stepSize));
 
-				m_vvec3Points.push_back(ctr);
-				m_vvec3Points.push_back(ctr + glm::rotate(seg->terminus->qRot, pt1) * seg->terminus->vec3Scale.x * 0.5f);
-				m_vvec3Points.push_back(ctr + glm::rotate(seg->terminus->qRot, pt2) * seg->terminus->vec3Scale.x * 0.5f);
+				glm::mat4 trans = glm::translate(glm::mat4(), ctr) * glm::mat4_cast(glm::rotate(seg->terminus->qRot, glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f))) * glm::scale(glm::mat4(), glm::vec3(seg->terminus->vec3Scale.x * 0.85f, seg->terminus->vec3Scale.x * 0.5f, 1.f));
+
+				m_vvec3Points.push_back(glm::vec3(trans * glm::vec4(0.f, 0.f, 0.f, 1.f)));
+				m_vvec3Points.push_back(glm::vec3(trans * glm::vec4(pt1, 1.f)));
+				m_vvec3Points.push_back(glm::vec3(trans * glm::vec4(pt2, 1.f)));
 
 				m_vvec4Colors.push_back(glm::vec4((terminusHeading + 1.f) * 0.5f, 1.f));
 				m_vvec4Colors.push_back(glm::vec4((terminusHeading + 1.f) * 0.5f, 1.f));

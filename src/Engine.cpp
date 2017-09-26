@@ -156,7 +156,7 @@ bool Engine::init()
 	init_lighting();
 
 	lsys = new LSystem();
-	lsys->setIterations(4);
+	lsys->setIterations(5);
 	lsys->setAngle(35.f);
 	lsys->setSize(glm::vec3(0.1f, 1.f, 1.f));
 	lsys->setStart('X');
