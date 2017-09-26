@@ -30,12 +30,8 @@ LSystem::~LSystem()
 void LSystem::makeTurtleCommands()
 {
 	m_mapTurtleCommands['F'] = std::function<void()>([&]() {
-		float currentTreeDepth = 0.f;
-		for (auto p = m_pCurrentNode; p != NULL; p = p->parentNode)
-			currentTreeDepth += 1.f;
-
 		glm::vec3 scaler = glm::vec3(1.f, 0.85f, 1.f);
-		scaler.x *= 1.35f * scaler.y;
+		scaler.x *= 1.40f * scaler.y;
 
 		glm::vec3 headingVec = glm::rotate(m_Turtle.orientation, glm::vec3(0.f, 1.f, 0.f));
 
@@ -552,6 +548,41 @@ void LSystem::generateMesh(uint16_t numSubsegments)
 			m_vusInds.push_back(m_vvec3Points.size() - 5u);
 			m_vusInds.push_back(m_vvec3Points.size() - 1u);
 			m_vusInds.push_back(m_vvec3Points.size() - 2u);
+		}
+
+		// check if terminal node and add endcap
+		if (seg->terminus->vChildren.size() == 0u)
+		{
+			int numSegs = 16;
+			glm::vec3 ctr = seg->terminus->vec3Pos;
+
+			float stepSize = 1.f / (float)numSegs;
+
+			for (int i = 0; i < numSegs; ++i)
+			{
+				float ratio = (float)i / (float)(numSegs);
+
+				glm::vec3 pt1(0.f);
+				glm::vec3 pt2(0.f);
+
+				pt1.x = sin(glm::half_pi<float>() - glm::pi<float>() * ratio);
+				pt1.y = cos(glm::half_pi<float>() - glm::pi<float>() * ratio);
+
+				pt2.x = sin(glm::half_pi<float>() - glm::pi<float>() * (ratio + stepSize));
+				pt2.y = cos(glm::half_pi<float>() - glm::pi<float>() * (ratio + stepSize));
+
+				m_vvec3Points.push_back(ctr);
+				m_vvec3Points.push_back(ctr + glm::rotate(seg->terminus->qRot, pt1) * seg->terminus->vec3Scale.x * 0.5f);
+				m_vvec3Points.push_back(ctr + glm::rotate(seg->terminus->qRot, pt2) * seg->terminus->vec3Scale.x * 0.5f);
+
+				m_vvec4Colors.push_back(glm::vec4((terminusHeading + 1.f) * 0.5f, 1.f));
+				m_vvec4Colors.push_back(glm::vec4((terminusHeading + 1.f) * 0.5f, 1.f));
+				m_vvec4Colors.push_back(glm::vec4((terminusHeading + 1.f) * 0.5f, 1.f));
+
+				m_vusInds.push_back(m_vvec3Points.size() - 3u);
+				m_vusInds.push_back(m_vvec3Points.size() - 2u);
+				m_vusInds.push_back(m_vvec3Points.size() - 1u);
+			}
 		}
 	}
 }
